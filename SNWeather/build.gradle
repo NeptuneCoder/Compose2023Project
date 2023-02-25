@@ -4,6 +4,7 @@ plugins {
     //hilt
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -70,6 +71,17 @@ dependencies {
     kapt "com.google.dagger:hilt-compiler:2.44"
     //constraintLayout：2023年2月24日
     implementation 'androidx.constraintlayout:constraintlayout-compose:1.0.1'
+    //swiperefresh：2023年2月25日
+    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
+    //viewmodels()：2023年2月25日
+    implementation "androidx.activity:activity-ktx:1.6.1"
+    //accompanist-pager：2023年2月25日
+    // https://mvnrepository.com/artifact/com.google.accompanist/accompanist-pager
+    implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
+    //lifecycle-viewmodel-compose：2023年2月25日
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
+
+
 }
 // hilt :Allow references to generated code
 kapt {

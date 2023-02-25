@@ -19,3 +19,29 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+
+-dontoptimize
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-dontpreverify
+-ignorewarnings
+
+-dontwarn java.lang.invoke.*
+-dontwarn **$$Lambda$*
+
+#support
+# platform version.  We know about them, and they are safe.
+#-dontwarn android.support.**
+#-keep class android.support.v4.** { *; }
+#-keep class android.support.v7.** { *; }
+#-keep class android.support.v8.** { *; }
+#-keep class android.support.multidex.**{*;}
+-keep class com.google.android.material.** {*;}
+-keep class androidx.** {*;}
+-keep public class * extends androidx.**
+-keep interface androidx.** {*;}
+-dontwarn com.google.android.material.**
+-dontnote com.google.android.material.**
+-dontwarn androidx.**
