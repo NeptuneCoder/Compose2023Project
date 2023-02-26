@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 rootProject.name = "Compose2023Project"
 include ':Chapter2'
 include ':SNWeather'
+include ':officialtutorial'
