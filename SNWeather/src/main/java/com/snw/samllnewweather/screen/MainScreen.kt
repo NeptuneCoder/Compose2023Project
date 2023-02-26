@@ -23,6 +23,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.snw.samllnewweather.R
 import com.snw.samllnewweather.ui.theme.BgColor
+import com.snw.samllnewweather.viewmodel.MainViewModel
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -59,7 +60,8 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
     Box(
         Modifier
             .pullRefresh(pullRefreshState)
-            .background(color = BgColor)) {
+            .background(color = BgColor)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,7 +79,7 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
 
 @Composable
 @ExperimentalPagerApi
-fun ListInfo(weatherInfo: WeatherInfo, chooseLocationClick: (Int) -> Unit = {}) {
+fun ListInfo(weatherInfo: VirtualWeatherInfo, chooseLocationClick: (Int) -> Unit = {}) {
     LazyColumn(Modifier.padding(start = 10.dp, end = 10.dp)) {
         item {
             TopMenu(weatherInfo, onClick = chooseLocationClick)
@@ -91,15 +93,15 @@ fun ListInfo(weatherInfo: WeatherInfo, chooseLocationClick: (Int) -> Unit = {}) 
             ChineseCalendarInfo(weatherInfo)
             Spacer(modifier = Modifier.height(14.dp))
         }
-        items(weatherInfo.futureDays.size) {
-            ItemInfo(weatherInfo, it)
-        }
+//        items(weatherInfo.futureDays.size) {
+//            ItemInfo(weatherInfo, it)
+//        }
     }
 
 }
 
 @Composable
-fun TopMenu(weatherInfo: WeatherInfo, onClick: (Int) -> Unit = {}) {
+fun TopMenu(weatherInfo: VirtualWeatherInfo, onClick: (Int) -> Unit = {}) {
     ConstraintLayout(
         Modifier
             .wrapContentHeight()
@@ -135,7 +137,7 @@ fun TopMenu(weatherInfo: WeatherInfo, onClick: (Int) -> Unit = {}) {
 }
 
 @Composable
-fun MainInfo(weatherInfo: WeatherInfo) {
+fun MainInfo(weatherInfo: VirtualWeatherInfo) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()
@@ -192,7 +194,7 @@ fun MainInfo(weatherInfo: WeatherInfo) {
 }
 
 @Composable
-fun DetailInfo(weatherInfo: WeatherInfo) {
+fun DetailInfo(weatherInfo: VirtualWeatherInfo) {
     Row {
         BodyTemperatureInfo(weatherInfo, Modifier.weight(1f))
         WindInfo(weatherInfo, Modifier.weight(1f))
@@ -201,7 +203,7 @@ fun DetailInfo(weatherInfo: WeatherInfo) {
 }
 
 @Composable
-fun BodyTemperatureInfo(weatherInfo: WeatherInfo, modifier: Modifier = Modifier) {
+fun BodyTemperatureInfo(weatherInfo: VirtualWeatherInfo, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         Text(text = "体感温度")
         Text(text = buildAnnotatedString {
@@ -216,7 +218,7 @@ fun BodyTemperatureInfo(weatherInfo: WeatherInfo, modifier: Modifier = Modifier)
 }
 
 @Composable
-fun WindInfo(weatherInfo: WeatherInfo, modifier: Modifier = Modifier) {
+fun WindInfo(weatherInfo: VirtualWeatherInfo, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = weatherInfo.windDirect)
         Text(text = buildAnnotatedString {
@@ -231,7 +233,7 @@ fun WindInfo(weatherInfo: WeatherInfo, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AirInfo(weatherInfo: WeatherInfo, modifier: Modifier = Modifier) {
+fun AirInfo(weatherInfo: VirtualWeatherInfo, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.End) {
         Text(text = "空气${weatherInfo.airState}")
         Text(text = buildAnnotatedString {
@@ -246,7 +248,7 @@ fun AirInfo(weatherInfo: WeatherInfo, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ChineseCalendarInfo(weatherInfo: WeatherInfo) {
+fun ChineseCalendarInfo(weatherInfo: VirtualWeatherInfo) {
     Text(text = buildAnnotatedString {
         withStyle(style = SpanStyle(fontSize = 16.sp)) {
             append("${weatherInfo.chineseCalendarYear}\n")
@@ -264,7 +266,7 @@ fun ChineseCalendarInfo(weatherInfo: WeatherInfo) {
 
 @Composable
 //@ExperimentalPagerApi
-fun Future24Info(weatherInfo: WeatherInfo) {
+fun Future24Info(weatherInfo: VirtualWeatherInfo) {
 //    val pagerState = rememberPagerState()
 //    HorizontalPager(count = 24, Modifier.wrapContentWidth(), state = pagerState) {
 //}
@@ -288,12 +290,9 @@ fun Future24Info(weatherInfo: WeatherInfo) {
                 }
                 .padding(top = 6.dp)) {
             items(weatherInfo.futureHours.size) {
+                val data = weatherInfo.futureHours.get(it)
                 Text(
-                    text = "${weatherInfo.futureHours.get(it).time}\n${
-                        weatherInfo.futureHours.get(
-                            it
-                        ).state
-                    }",
+                    text = "${data.hours}\n${data.wea}\n空气质量:${data.aqi}\n温度:${data.tem}",
                     Modifier
                         .padding(end = 10.dp)
                         .wrapContentSize(), fontSize = 12.sp
@@ -306,10 +305,10 @@ fun Future24Info(weatherInfo: WeatherInfo) {
 
 
 @Composable
-fun ItemInfo(weatherInfo: WeatherInfo, index: Int) {
-    Text(
-        text = "空气状态：${weatherInfo.futureDays.get(index).state}",
-        style = TextStyle(fontSize = 20.sp),
-        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
-    )
+fun ItemInfo(weatherInfo: VirtualWeatherInfo, index: Int) {
+//    Text(
+//        text = "空气状态：${weatherInfo.futureDays.get(index).state}",
+//        style = TextStyle(fontSize = 20.sp),
+//        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+//    )
 }

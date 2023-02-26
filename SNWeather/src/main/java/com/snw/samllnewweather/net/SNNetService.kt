@@ -1,11 +1,15 @@
 package com.snw.samllnewweather.net
 
-import retrofit2.Call
+import com.snw.samllnewweather.model.NetWeatherInfo
+import kotlinx.coroutines.flow.Flow
 import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 interface SNNetService {
-    @GET("users/{user}/repos")
-    fun listRepos(@Path("user") user: String?): Call<List<String>>
+    @GET("api?unescape=1&version=v62")
+    fun getWeatherInfo(
+        @Query("lng") lng: String,
+        @Query("lat") lat: String
+    ): Flow<NetWeatherInfo>
 }

@@ -23,11 +23,23 @@ android {
             useSupportLibrary true
         }
     }
+    signingConfigs {
+        android_studio_app {
+            keyAlias 'androidKeyStore'
+            keyPassword 'android.keystore'
+            storeFile file('/Users/yh/AndroidStudioProjects/Compose2023Project/android.keystore')
+            storePassword 'android.keystore'
+        }
+    }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.android_studio_app
+        }
+        debug {
+            signingConfig signingConfigs.android_studio_app
         }
     }
     compileOptions {
@@ -48,10 +60,15 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
 }
 
 dependencies {
-
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
     implementation 'androidx.activity:activity-compose:1.6.0'
@@ -65,7 +82,12 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_ui_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_ui_version"
     //retrofit:2023年2月24日
-    implementation 'com.squareup.retrofit2:retrofit:2.6.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.9.1"
+    implementation "com.squareup.retrofit2:converter-scalars:2.9.0"
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation "io.github.vincent-series:sharp-retrofit:1.9"
     //hilt：2023年2月24日
     implementation "com.google.dagger:hilt-android:2.44"
     kapt "com.google.dagger:hilt-compiler:2.44"
@@ -80,6 +102,10 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
     //lifecycle-viewmodel-compose：2023年2月25日
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
+
+
+    //百度定位
+//    implementation(name: "BaiduLBS_AndroidSDK_Lib", ext: "aar")
 
 
 }
