@@ -36,7 +36,7 @@ class MainViewModel @Inject constructor(
     private val _errMsg = MutableStateFlow("")
     val errMsg: StateFlow<String>
         get() = _errMsg.asStateFlow()
-    private val _weatherData = MutableStateFlow<WeatherInfo>(randomData())
+    private val _weatherData = MutableStateFlow<WeatherInfo>(WeatherInfo())
     val weatherData: StateFlow<WeatherInfo>
         get() = _weatherData.asStateFlow()
 
