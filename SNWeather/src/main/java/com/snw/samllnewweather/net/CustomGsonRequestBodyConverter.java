@@ -1,6 +1,8 @@
 package com.snw.samllnewweather.net;
 
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonWriter;
@@ -33,6 +35,7 @@ final class CustomGsonRequestBodyConverter<T> implements Converter<T, RequestBod
         Writer writer = new OutputStreamWriter(buffer.outputStream(), UTF_8);
         JsonWriter jsonWriter = gson.newJsonWriter(writer);
         adapter.write(jsonWriter, value);
+        Log.i("value.getClass().getName()", value.getClass().getName());
         jsonWriter.close();
 
         return RequestBody.create(MEDIA_TYPE, buffer.readByteString());

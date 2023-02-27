@@ -197,22 +197,22 @@ val futureDaysList: List<List<FutureDayData>> = listOf(
 )
 
 @Parcelize
-data class VirtualWeatherInfo(
-    val address: String,
-    val publishTime: String,
-    val temp: String,
-    val riseTime: String,
-    val downTime: String,
-    val info: String,
-    val bodyTemp: String,
-    val windDirect: String,
-    val windLevel: String,
-    val airState: String,
-    val airLevel: String,
-    val chineseCalendarYear: String,
-    val chineseCalendarDay: String,
-    val futureHours: List<HourInfo>,
-    val futureDays: List<DayInfo>
+data class WeatherInfo(
+    var address: String = "",
+    var publishTime: String = "",
+    var temp: String = "",
+    var riseTime: String = "",
+    var downTime: String = "",
+    var tempMax: String = "",
+    var tempMin: String = "",
+    var text: String = "",
+    var feelTemp: String = "",
+    var windDirect: String = "",
+    var windLevel: String = "",
+    var airState: String = "",
+    var airAqi: String = "",
+    var futureHours: List<HourInfo> = listOf(),
+    var futureDays: List<DayInfo> = listOf()
 ) : Parcelable
 
 @Parcelize
@@ -221,21 +221,19 @@ data class FutureHourData(val time: String, val state: String) : Parcelable
 @Parcelize
 data class FutureDayData(val time: String, val state: String) : Parcelable
 
-fun randomData(): VirtualWeatherInfo {
-    val weatherData = VirtualWeatherInfo(
+fun randomData(): WeatherInfo {
+    val weatherData = WeatherInfo(
         address = addressList.random(),
         publishTime = publishTimeList.random(),
         temp = tempList.random(),
         riseTime = riseTimeList.random(),
         downTime = downTimeList.random(),
-        info = infoList.random(),
-        bodyTemp = bodyTempList.random(),
+        text = infoList.random(),
+        feelTemp = bodyTempList.random(),
         windDirect = windDirectList.random(),
         windLevel = windLevelList.random(),
         airState = airStateList.random(),
-        airLevel = airLevelList.random(),
-        chineseCalendarYear = chineseCalendarYearList.random(),
-        chineseCalendarDay = chineseCalendarDayList.random(),
+        airAqi = airLevelList.random(),
         futureHours = listOf(),
         futureDays = listOf()
     )

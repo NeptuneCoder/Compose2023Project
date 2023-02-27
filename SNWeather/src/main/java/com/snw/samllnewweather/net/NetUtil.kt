@@ -92,7 +92,7 @@ object NetUtil {
     @Singleton
     @Provides
     fun provideConverterFactory(): Converter.Factory {
-        return createConverterFactory()
+        return createConverterFactory()//这里全局处理了code异常的提醒
     }
 
 

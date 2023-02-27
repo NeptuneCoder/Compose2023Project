@@ -8,8 +8,10 @@ import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
+import com.snw.samllnewweather.ext.formatTemp
+import com.snw.samllnewweather.ext.formatTime
 import com.snw.samllnewweather.net.SNNetService
-import com.snw.samllnewweather.screen.VirtualWeatherInfo
+import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.screen.randomData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,66 +29,62 @@ class MainViewModel @Inject constructor(
 
 
     private var city: String = ""
-    private var latitude: Double = 0.0
-    private var longitude: Double = 0.0
-
     private val _isRefresing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean>
         get() = _isRefresing.asStateFlow()
 
-    private val _weatherData = MutableStateFlow<VirtualWeatherInfo>(randomData())
-    val weatherData: StateFlow<VirtualWeatherInfo>
+    private val _errMsg = MutableStateFlow("")
+    val errMsg: StateFlow<String>
+        get() = _errMsg.asStateFlow()
+    private val _weatherData = MutableStateFlow<WeatherInfo>(randomData())
+    val weatherData: StateFlow<WeatherInfo>
         get() = _weatherData.asStateFlow()
 
-
-    fun refresh() {
+    private var loc = ""
+    fun refresh(location: String = loc) {
+        this.loc = location
 
         viewModelScope.launch {
             _isRefresing.emit(true)
             //请求网络加载数据
-            snapi.getRealTimeInfo("${latitude},$longitude").flowOn(Dispatchers.IO).catch {
-                Log.i("JsonFormatError", "it = ${it.toString()}")
-                _isRefresing.emit(false)
-            }
-                .collect {
-                    if (it.code == 200) {
-                        val data = VirtualWeatherInfo(
-                            address = "",
-                            publishTime = "${it.updateTime}",
-                            temp = "${it.now.temp}°",
-                            riseTime = "",
-                            downTime = "",
-                            info = "${it.now.text}:°C",
-                            bodyTemp = "",
-                            windDirect = "${it.now.windDir}",
-                            windLevel = "${it.now.windScale}",
-                            airState = "",
-                            airLevel = "",
-                            chineseCalendarYear = "${longitude}",
-                            chineseCalendarDay = "${latitude}",
-                            futureHours = listOf(),
-                            futureDays = listOf()
-                        )
-                        _weatherData.emit(data)
+            snapi.getRealTimeInfo(location)
+                .zip(snapi.getHourInfo(location)) { source1, source2 ->
+                    val result = WeatherInfo()
+                    with(source1.now) {
+                        result.address = "UnKnow"
+                        result.publishTime = source1.updateTime.formatTime()
+                        result.temp = temp.formatTemp()
+                        result.feelTemp = feelsLike
+                        result.text = text
+                        result.windDirect = windDir
+                        result.windLevel = windScale
                     }
+                    result.futureHours = source2.hourly
 
+                    result
+
+                }.zip(snapi.getDayInfo(location)) { source3, source4 ->
+                    val dayInfo = source4.daily[0]
+                    source3.riseTime = dayInfo.sunrise
+                    source3.downTime = dayInfo.sunset
+                    source3.tempMax = dayInfo.tempMax.formatTemp()
+                    source3.tempMin = dayInfo.tempMin.formatTemp()
+                    source3.futureDays = source4.daily
+                    source3
+                }.zip(snapi.getAirInfo(location)) { source5, source6 ->
+                    source5.airAqi = source6.now.aqi
+                    source5.airState = source6.now.category
+                    source5
+                }.flowOn(Dispatchers.IO)
+                .catch {
+                    _isRefresing.emit(false)
+                    _errMsg.emit(it.toString() + "loc" + location)
+                }
+                .collect {
+                    _weatherData.emit(it)
                     _isRefresing.emit(false)
                 }
         }
-    }
-
-    fun setLocation(city: String, latitude: Double, longitude: Double) {
-
-        this.city = city
-        this.latitude = latitude
-        this.longitude = longitude
-        if (latitude > 0 && longitude > 0) {
-            mLocationClient.stop()
-            refresh()
-        }
-
-
-        Log.i("location", "setLocation latitude = $latitude  longitude = ${longitude}")
     }
 
     lateinit var mLocationClient: LocationClient
@@ -133,6 +131,10 @@ class MainViewModel @Inject constructor(
     }
 
 
+    fun stopLocation() {
+        mLocationClient.stop()
+    }
+
     /**
      * 实现定位回调
      */
@@ -150,8 +152,14 @@ class MainViewModel @Inject constructor(
                     "location",
                     "latitude = $latitude  longitude = ${longitude}  location.city = ${location.city}"
                 )
+                Log.i("location.locType", "location.locType == " + location.locType)
+                if (location.locType == 61 || location.locType == 161) {
+                    viewModel.refresh(
+                        "$longitude,$latitude"
+                    )
+                    viewModel.stopLocation()
+                }
 
-                viewModel.setLocation(location.city + ":" + location.addrStr, latitude, longitude)
                 //获取定位精度，默认值为0.0f
 //                val radius: Float = location.getRadius()
 //                //获取经纬度坐标类型，以LocationClientOption中设置过的坐标类型为准

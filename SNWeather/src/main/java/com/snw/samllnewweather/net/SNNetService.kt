@@ -1,6 +1,6 @@
 package com.snw.samllnewweather.net
 
-import com.snw.samllnewweather.model.RealTimeInfo
+import com.snw.samllnewweather.model.*
 import kotlinx.coroutines.flow.Flow
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -12,5 +12,22 @@ interface SNNetService {
     @GET("v7/weather/now")
     fun getRealTimeInfo(
         @Query("location") location: String,
-    ): Flow<RealTimeInfo>
+    ): Flow<RealTimeInfoResponse>
+
+    @GET("v7/weather/7d")
+    fun getDayInfo(
+        @Query("location") location: String,
+    ): Flow<DayInfoResponse>
+
+    @GET("v7/weather/24h")
+    fun getHourInfo(
+        @Query("location") location: String,
+    ): Flow<HourInfoResponse>
+
+    @GET("v7/air/now")
+    fun getAirInfo(
+        @Query("location") location: String,
+    ): Flow<AirInfoResponse>
+
+
 }

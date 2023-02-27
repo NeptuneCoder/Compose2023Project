@@ -21,32 +21,11 @@ internal class CustomGsonResponseBodyConverter<T>(
     @Throws(IOException::class)
     override fun convert(value: ResponseBody): T {
         val response = value.string()
-        Log.i("result", "response result = " + response)
-        val httpStatus = gson.fromJson(response, HttpStatus::class.java)
-            ?: throw ApiException(ApiErrorCode.UNKNOW, "自定义错误")
+        val httpStatus = gson.fromJson(response, HttpStatus::class.java) ?: throw ApiException(
+            ApiErrorCode.UNKNOW,
+            "自定义错误"
+        )
 
-//        if (!httpStatus.token.isNullOrEmpty()) {
-//            saveToken(httpStatus.token, LemaPayRetrofitClient.getCurrentToken())
-//        }
-
-//        if (httpStatus.code == REQUEST_AUTHORIZATION || httpStatus.code == APIERROR.NO_AUTHORIZATION) { //支付密码错误 需要取得wrong_times，余额不够，需要获取pay_type
-//            val payException = GsonUtil.GsonToBean(response, DeviceLoginException::class.java)
-//            value.close()
-//            throw payException
-//        }
-//        if (httpStatus.code == APIERROR.NOT_BIND_ACCOUNT || httpStatus.code == APIERROR.BIND_THIRD_NEED_PHONE) { //支付密码错误 需要取得wrong_times，余额不够，需要获取pay_type
-//            val jsonObject = JSONObject(response)
-//            val code = jsonObject.optInt("code")
-//            val msg = jsonObject.optString("msg")
-//            val data = jsonObject.optJSONObject("data").toString()
-//            val lemaException = OtherException(code, msg, data)
-//            throw lemaException
-//        }
-//        if (httpStatus.code == PAY_PSW_ERRPR || httpStatus.code == LACK_OF_BALANCE) { //支付密码错误 需要取得wrong_times，余额不够，需要获取pay_type
-//            val payException = GsonUtil.GsonToBean(response, PayException::class.java)
-//            value.close()
-//            throw payException
-//        }
         if (httpStatus.code == ApiErrorCode.FORCED_UPDATE) {
             //强制更新
             val checkVersion = Gson().fromJson(response, UpdateException::class.java)
@@ -74,13 +53,7 @@ internal class CustomGsonResponseBodyConverter<T>(
     fun saveToken(newToken: String, oldToken: String) {
         if (newToken.trim() != oldToken.trim()) {
             //TODO 全局拦截更新token
-//            LogUtils.file("服务端返回了新token啦：token=$newToken")
-//            /**
-//             * 每次获取接口都去更新token
-//             */
-//            LemaPayRetrofitClient.addToken(newToken)
-//
-//            LemaPayApplication.getInstance().refreshToken(newToken)
+            //可用于更新全局token
         }
     }
 }
