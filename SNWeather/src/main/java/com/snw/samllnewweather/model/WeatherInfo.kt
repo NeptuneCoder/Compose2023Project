@@ -1,7 +1,8 @@
 package com.snw.samllnewweather.screen
 
 import android.os.Parcelable
-import com.snw.samllnewweather.model.Future24Hour
+import com.snw.samllnewweather.model.DayInfo
+import com.snw.samllnewweather.model.HourInfo
 import kotlinx.parcelize.Parcelize
 
 
@@ -210,7 +211,8 @@ data class VirtualWeatherInfo(
     val airLevel: String,
     val chineseCalendarYear: String,
     val chineseCalendarDay: String,
-    val futureHours: List<Future24Hour>
+    val futureHours: List<HourInfo>,
+    val futureDays: List<DayInfo>
 ) : Parcelable
 
 @Parcelize
@@ -235,6 +237,7 @@ fun randomData(): VirtualWeatherInfo {
         chineseCalendarYear = chineseCalendarYearList.random(),
         chineseCalendarDay = chineseCalendarDayList.random(),
         futureHours = listOf(),
+        futureDays = listOf()
     )
     return weatherData
 }

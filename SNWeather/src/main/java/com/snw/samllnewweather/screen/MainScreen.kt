@@ -292,7 +292,7 @@ fun Future24Info(weatherInfo: VirtualWeatherInfo) {
             items(weatherInfo.futureHours.size) {
                 val data = weatherInfo.futureHours.get(it)
                 Text(
-                    text = "${data.hours}\n${data.wea}\n空气质量:${data.aqi}\n温度:${data.tem}",
+                    text = "",
                     Modifier
                         .padding(end = 10.dp)
                         .wrapContentSize(), fontSize = 12.sp

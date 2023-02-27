@@ -10,8 +10,10 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.Proxy
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -19,7 +21,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetUtil {
-    val BASE_URL = "https://v0.yiketianqi.com/"
+    //官方文档地址 ：https://dev.qweather.com/docs/api/weather/weather-now/
+    private val BASE_URL = "https://api.qweather.com/"
 
     @Singleton
     @Provides
@@ -52,10 +55,8 @@ object NetUtil {
                 if (METHOD_GET.equals(request.method)) {
 //                    appid=21563178&appsecret=xyYGxRA4
                     //测试账号：appid=43656176&appsecret=I42og6Lm
-                    urlBuilder.addEncodedQueryParameter("appsecret", "I42og6Lm")
-                    urlBuilder.addEncodedQueryParameter("appid", "43656176")
+                    urlBuilder.addEncodedQueryParameter("key", "dc418e957f504a0ea777f9e91ae88329")
                     val httpUrl = urlBuilder.build()
-
                     requestBuilder.url(httpUrl);
                 }
 
@@ -74,24 +75,32 @@ object NetUtil {
     ): OkHttpClient {
         return OkHttpClient
             .Builder()
-            .readTimeout(15, TimeUnit.SECONDS)
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .addInterceptor(paramInterceptor)
-            .addInterceptor(loggerInterceptor)
-            .build()
+            .apply {
+                readTimeout(15, TimeUnit.SECONDS)
+                connectTimeout(15, TimeUnit.SECONDS)
+                //设置超时
+                writeTimeout(20, TimeUnit.SECONDS)
+                retryOnConnectionFailure(true)//错误重连
+                proxy(Proxy.NO_PROXY)//设置不要代理
+                addInterceptor(paramInterceptor)
+                addInterceptor(loggerInterceptor)
+
+            }.build()
 
     }
 
     @Singleton
     @Provides
-    fun provideConverterFactory(): GsonConverterFactory =
-        GsonConverterFactory.create()
+    fun provideConverterFactory(): Converter.Factory {
+        return createConverterFactory()
+    }
+
 
     @Singleton
     @Provides
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        gsonConverterFactory: GsonConverterFactory
+        gsonConverterFactory: Converter.Factory,
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)

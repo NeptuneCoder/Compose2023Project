@@ -1,16 +1,13 @@
 package com.snw.samllnewweather.viewmodel
 
 import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
-import com.google.gson.Gson
 import com.snw.samllnewweather.net.SNNetService
 import com.snw.samllnewweather.screen.VirtualWeatherInfo
 import com.snw.samllnewweather.screen.randomData
@@ -47,39 +44,47 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             _isRefresing.emit(true)
             //请求网络加载数据
-            snapi.getWeatherInfo(lat = "${latitude}", lng = "$longitude").flowOn(Dispatchers.IO)
+            snapi.getRealTimeInfo("${latitude},$longitude").flowOn(Dispatchers.IO).catch {
+                Log.i("JsonFormatError", "it = ${it.toString()}")
+                _isRefresing.emit(false)
+            }
                 .collect {
-                    Log.i("gsonResult", Gson().toJson(it))
-                    val data = VirtualWeatherInfo(
-                        address = if ("${it.city}".isEmpty()) {
-                            city
-                        } else {
-                            "${it.city}"
-                        },
-                        publishTime = "${it.update_time}",
-                        temp = "${it.tem}°",
-                        riseTime = "${it.sunrise}",
-                        downTime = "${it.sunset}",
-                        info = "${it.wea}:${it.tem2}°C~${it.tem2}°C",
-                        bodyTemp = "",
-                        windDirect = "${it.win}",
-                        windLevel = "${it.win_speed}",
-                        airState = "${it.air_level}",
-                        airLevel = "${it.air}",
-                        chineseCalendarYear = "${longitude}",
-                        chineseCalendarDay = "${latitude}",
-                        futureHours = it.hours ?: listOf()
-                    )
-                    _weatherData.emit(data)
+                    if (it.code == 200) {
+                        val data = VirtualWeatherInfo(
+                            address = "",
+                            publishTime = "${it.updateTime}",
+                            temp = "${it.now.temp}°",
+                            riseTime = "",
+                            downTime = "",
+                            info = "${it.now.text}:°C",
+                            bodyTemp = "",
+                            windDirect = "${it.now.windDir}",
+                            windLevel = "${it.now.windScale}",
+                            airState = "",
+                            airLevel = "",
+                            chineseCalendarYear = "${longitude}",
+                            chineseCalendarDay = "${latitude}",
+                            futureHours = listOf(),
+                            futureDays = listOf()
+                        )
+                        _weatherData.emit(data)
+                    }
+
                     _isRefresing.emit(false)
                 }
         }
     }
 
     fun setLocation(city: String, latitude: Double, longitude: Double) {
+
         this.city = city
         this.latitude = latitude
         this.longitude = longitude
+        if (latitude > 0 && longitude > 0) {
+            mLocationClient.stop()
+            refresh()
+        }
+
 
         Log.i("location", "setLocation latitude = $latitude  longitude = ${longitude}")
     }
