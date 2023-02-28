@@ -27,13 +27,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.placeholder.PlaceholderHighlight
-import com.google.accompanist.placeholder.fade
-import com.google.accompanist.placeholder.placeholder
-import com.google.accompanist.placeholder.shimmer
+
 import com.snw.samllnewweather.R
 import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
+import com.snw.samllnewweather.ext.smPlaceholder
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.ui.theme.BgColor
@@ -137,10 +135,8 @@ fun TopMenu(onClick: (Int) -> Unit = {}) {
         Modifier
             .wrapContentHeight()
             .padding(top = 10.dp)
-            .placeholder(
-                visible = currentLocalPlaceholder.current, color = Purple500,
-                highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                shape = RoundedCornerShape(4.dp)
+            .smPlaceholder(
+                visible = currentLocalPlaceholder.current
             )
     ) {
         val (iconRef, addressRef, timeRef) = remember {
@@ -197,11 +193,7 @@ fun MainInfo() {
                     absoluteLeft.linkTo(parent.absoluteLeft)
                     absoluteRight.linkTo(parent.absoluteRight)
                 }
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                ),
+                .smPlaceholder(currentLocalPlaceholder.current),
             style = MaterialTheme.typography.h2,
         )
 
@@ -213,11 +205,7 @@ fun MainInfo() {
                     absoluteLeft.linkTo(parent.absoluteLeft)
 
                 }
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                ),
+                .smPlaceholder(currentLocalPlaceholder.current),
             style = MaterialTheme.typography.body1,
         )
 
@@ -229,11 +217,7 @@ fun MainInfo() {
                     baseline.linkTo(infoRef.baseline)
                     absoluteRight.linkTo(parent.absoluteRight)
                 }
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                ),
+                .smPlaceholder(currentLocalPlaceholder.current),
 
             style = MaterialTheme.typography.body1,
         )
@@ -247,11 +231,7 @@ fun MainInfo() {
                     absoluteRight.linkTo(parent.absoluteRight)
                 }
                 .padding(top = 10.dp)
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                ),
+                .smPlaceholder(currentLocalPlaceholder.current),
             style = MaterialTheme.typography.body1,
         )
 
@@ -265,31 +245,19 @@ fun DetailInfo(weatherInfo: WeatherInfo) {
             weatherInfo,
             Modifier
                 .weight(1f)
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                )
+                .smPlaceholder(currentLocalPlaceholder.current)
         )
         WindInfo(
             weatherInfo,
             Modifier
                 .weight(1f)
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                )
+                .smPlaceholder(currentLocalPlaceholder.current)
         )
         AirInfo(
             weatherInfo,
             Modifier
                 .weight(1f)
-                .placeholder(
-                    visible = currentLocalPlaceholder.current, color = Purple500,
-                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                    shape = RoundedCornerShape(4.dp)
-                )
+                .smPlaceholder(currentLocalPlaceholder.current)
         )
     }
 }
@@ -365,11 +333,7 @@ fun Future24Info() {
         Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .placeholder(
-                visible = currentLocalPlaceholder.current, color = Purple500,
-                highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                shape = RoundedCornerShape(4.dp)
-            )
+            .smPlaceholder(currentLocalPlaceholder.current)
     ) {
         val (titleRef, contentRef) = remember {
             createRefs()
@@ -410,10 +374,8 @@ fun ItemInfo(dayInfo: DayInfo) {
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(top = 10.dp)
-            .placeholder(
-                visible = currentLocalPlaceholder.current, color = Purple500,
-                highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
-                shape = RoundedCornerShape(4.dp)
+            .smPlaceholder(
+                visible = currentLocalPlaceholder.current
             )
     ) {
 
