@@ -10,4 +10,7 @@
 2. 第三方sdk：百度地图sdk.和风api
 
 
+###### [小新天气apk下载](https://raw.githubusercontent.com/HaiYangCode/Compose2023Project/main/SNWeather/release/SNWeather-release.apk)
+
+
 
