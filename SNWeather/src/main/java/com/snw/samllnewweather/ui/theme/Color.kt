@@ -9,3 +9,4 @@ val Teal200 = Color(0xFF03DAC5)
 val BgColor = Color(0x4D90979B)
 
 val plackholderColor = Color(0x8090979B)
+val plackholderHightColor = Color(0x4DA1C8AA)
