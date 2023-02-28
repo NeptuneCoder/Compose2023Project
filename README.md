@@ -5,5 +5,9 @@
 #### 小新天气
 该项目采用MVI架构。使用Compose进行界面开发，ViewModel进行状态管理，Retrofit实现网络数据加载。采用Hilt进行解耦。
 
+##### 项目架构及三方SDK说明
+1. 项目采用mvi架构；原生组件有：Compose + ViewModel + Hilt + retrofit + Room  + Flow + accompanist*
+2. 第三方sdk：百度地图sdk.和风api
+
 
 

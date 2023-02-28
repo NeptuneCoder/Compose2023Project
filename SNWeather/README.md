@@ -9,8 +9,8 @@
 6. 未来24小时天气状态显示（自定义图片展示）
 7. 城市列表本地缓存
 
-#### 项目架构说明
-1. 项目采用mvi架构；原生组件有：Compose + ViewModel + Hilt + retrofit + Room  + Flow
+#### 项目架构及三方SDK说明
+1. 项目采用mvi架构；原生组件有：Compose + ViewModel + Hilt + retrofit + Room  + Flow + accompanist*
 2. 第三方sdk：百度地图sdk.和风api
 #### 使用资源说明
 ICON使用资源：https://www.iconfont.cn/user/detail?spm=a313x.7781069.0.d214f71f6&uid=757922&nid=u9q8JjfcFdqq
