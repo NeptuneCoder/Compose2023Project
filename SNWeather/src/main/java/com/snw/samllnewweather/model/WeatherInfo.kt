@@ -1,6 +1,8 @@
 package com.snw.samllnewweather.screen
 
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.model.HourInfo
 import kotlinx.parcelize.Parcelize
@@ -197,7 +199,9 @@ val futureDaysList: List<List<FutureDayData>> = listOf(
 )
 
 @Parcelize
+@Entity(tableName = "weather_info_table")
 data class WeatherInfo(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     var address: String = "",
     var publishTime: String = "",
     var temp: String = "",
@@ -211,6 +215,7 @@ data class WeatherInfo(
     var windLevel: String = "",
     var airState: String = "",
     var airAqi: String = "",
+    var locationGps: String = "",
     var futureHours: List<HourInfo> = listOf(),
     var futureDays: List<DayInfo> = listOf()
 ) : Parcelable

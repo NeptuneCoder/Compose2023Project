@@ -5,6 +5,7 @@ import com.coder.vincent.sharp_retrofit.call_adapter.flow.FlowCallAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -15,12 +16,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.Proxy
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NetUtil {
+object NetUtil  {
     //官方文档地址 ：https://dev.qweather.com/docs/api/weather/weather-now/
     private val BASE_URL = "https://api.qweather.com/"
 

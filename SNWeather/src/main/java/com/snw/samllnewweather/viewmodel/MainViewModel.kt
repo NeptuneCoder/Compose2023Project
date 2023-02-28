@@ -12,7 +12,6 @@ import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
 import com.snw.samllnewweather.net.SNNetService
 import com.snw.samllnewweather.screen.WeatherInfo
-import com.snw.samllnewweather.screen.randomData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +24,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val snapi: SNNetService,
     @ApplicationContext private val context: Context
+
 ) : ViewModel() {
 
 
@@ -43,7 +43,9 @@ class MainViewModel @Inject constructor(
     private var loc = ""
     fun refresh(location: String = loc) {
         this.loc = location
-
+        if (loc.isNullOrEmpty()) {
+            return
+        }
         viewModelScope.launch {
             _isRefresing.emit(true)
             //请求网络加载数据
@@ -92,9 +94,11 @@ class MainViewModel @Inject constructor(
 
     init {
         initLocaionClient()
-        mLocationClient.start()
     }
 
+    fun startLocation() {
+        mLocationClient.start()
+    }
 
     private fun initLocaionClient() {
         mLocationClient = LocationClient(context.applicationContext)

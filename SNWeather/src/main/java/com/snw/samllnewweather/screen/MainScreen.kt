@@ -1,5 +1,6 @@
 package com.snw.samllnewweather.screen
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,8 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -25,6 +28,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import com.snw.samllnewweather.R
 import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
@@ -43,6 +48,7 @@ fun HomeScreen(
 ) {
     val coroutine = rememberCoroutineScope()
     val errMsg by viewModel.errMsg.collectAsState()
+
     if (errMsg.isNotBlank()) {
         coroutine.launch {
             drawerState.snackbarHostState.showSnackbar(errMsg)
@@ -60,7 +66,15 @@ fun HomeScreen(
     }
 }
 
+
 val currentLocalData = compositionLocalOf { WeatherInfo() }
+
+@Composable
+fun CoustomCanvas() {
+    Canvas(modifier = Modifier) {
+        drawLine(Color.Black, start = Offset(0.dp.toPx(),0.dp.toPx()), end = Offset(100.dp.toPx(),100.dp.toPx()))
+    }
+}
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -88,6 +102,7 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
                     .fillMaxSize()
             ) {
                 item {
+
                     TopMenu(onClick = chooseLocationClick)
                     Spacer(modifier = Modifier.height(30.dp))
                     MainInfo()
