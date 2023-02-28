@@ -1,5 +1,6 @@
 package com.snw.samllnewweather.ui.screen
 
+import android.graphics.fonts.FontStyle
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -110,6 +111,8 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
                     Future24Info()
                     Spacer(modifier = Modifier.height(14.dp))
                     DetailInfo(weatherInfo)
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(text = "未来7天天气情况", fontSize = 18.sp)
                     Spacer(modifier = Modifier.height(14.dp))
 
                 }
