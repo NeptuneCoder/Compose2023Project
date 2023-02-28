@@ -17,4 +17,37 @@ ICON使用资源：https://www.iconfont.cn/user/detail?spm=a313x.7781069.0.d214f
 ##### 和风天气
 https://console.qweather.com/#/apps
 
+####  需要ApplicationContext上下文
+```kotlin
+class TestApplication @Inject constructor(private val context: Context) {
+
+    fun appIsNull() {
+        Log.i("appIsNull", "appIsNull == ${context == null}")
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+class TestApplicationModule {
+    @Singleton
+    @Provides
+    fun providerTestMethod(@ApplicationContext app: Context): TestApplication {
+        Log.i("app", "app is null = ${app == null}")
+        return TestApplication(app)
+    }
+}
+
+
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val snapi: SNNetService,
+    @ApplicationContext private val context: Context,
+    private val app: TestApplication
+
+) : ViewModel() {
+    
+}
+
+```
+
 

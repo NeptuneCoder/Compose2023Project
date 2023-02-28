@@ -1,13 +1,12 @@
-package com.snw.samllnewweather.screen
+package com.snw.samllnewweather.ui.screen
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -28,13 +27,18 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.fade
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
 import com.snw.samllnewweather.R
 import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
 import com.snw.samllnewweather.model.DayInfo
+import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.ui.theme.BgColor
+import com.snw.samllnewweather.ui.theme.Purple500
+import com.snw.samllnewweather.ui.theme.plackholderColor
 import com.snw.samllnewweather.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
@@ -68,13 +72,7 @@ fun HomeScreen(
 
 
 val currentLocalData = compositionLocalOf { WeatherInfo() }
-
-@Composable
-fun CoustomCanvas() {
-    Canvas(modifier = Modifier) {
-        drawLine(Color.Black, start = Offset(0.dp.toPx(),0.dp.toPx()), end = Offset(100.dp.toPx(),100.dp.toPx()))
-    }
-}
+val currentLocalPlaceholder = compositionLocalOf { true }
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -82,6 +80,7 @@ fun CoustomCanvas() {
 fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}) {
     val refreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val weatherInfo by viewModel.weatherData.collectAsState()
+    val showPlaceholder by viewModel.showPlaceholder.collectAsState()
 
 
     val pullRefreshState = rememberPullRefreshState(refreshing, {/*TODO 刷新*/
@@ -94,7 +93,10 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
             .pullRefresh(pullRefreshState)
             .background(color = BgColor)
     ) {
-        CompositionLocalProvider(currentLocalData provides weatherInfo) {
+        CompositionLocalProvider(
+            currentLocalData provides weatherInfo,
+            currentLocalPlaceholder provides showPlaceholder
+        ) {
             val dayData = currentLocalData.current.futureDays
             LazyColumn(
                 Modifier
@@ -135,6 +137,11 @@ fun TopMenu(onClick: (Int) -> Unit = {}) {
         Modifier
             .wrapContentHeight()
             .padding(top = 10.dp)
+            .placeholder(
+                visible = currentLocalPlaceholder.current, color = Purple500,
+                highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                shape = RoundedCornerShape(4.dp)
+            )
     ) {
         val (iconRef, addressRef, timeRef) = remember {
             createRefs()
@@ -185,10 +192,16 @@ fun MainInfo() {
 //        )
         Text(
             text = "${currentLocalData.current.temp}",
-            modifier = Modifier.constrainAs(temperatureRef) {
-                absoluteLeft.linkTo(parent.absoluteLeft)
-                absoluteRight.linkTo(parent.absoluteRight)
-            },
+            modifier = Modifier
+                .constrainAs(temperatureRef) {
+                    absoluteLeft.linkTo(parent.absoluteLeft)
+                    absoluteRight.linkTo(parent.absoluteRight)
+                }
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                ),
             style = MaterialTheme.typography.h2,
         )
 
@@ -199,7 +212,12 @@ fun MainInfo() {
                     baseline.linkTo(infoRef.baseline)
                     absoluteLeft.linkTo(parent.absoluteLeft)
 
-                },
+                }
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                ),
             style = MaterialTheme.typography.body1,
         )
 
@@ -210,7 +228,12 @@ fun MainInfo() {
                 .constrainAs(downTimeRef) {
                     baseline.linkTo(infoRef.baseline)
                     absoluteRight.linkTo(parent.absoluteRight)
-                },
+                }
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                ),
 
             style = MaterialTheme.typography.body1,
         )
@@ -223,7 +246,12 @@ fun MainInfo() {
                     top.linkTo(temperatureRef.bottom)
                     absoluteRight.linkTo(parent.absoluteRight)
                 }
-                .padding(top = 10.dp),
+                .padding(top = 10.dp)
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                ),
             style = MaterialTheme.typography.body1,
         )
 
@@ -233,9 +261,36 @@ fun MainInfo() {
 @Composable
 fun DetailInfo(weatherInfo: WeatherInfo) {
     Row {
-        BodyTemperatureInfo(weatherInfo, Modifier.weight(1f))
-        WindInfo(weatherInfo, Modifier.weight(1f))
-        AirInfo(weatherInfo, Modifier.weight(1f))
+        BodyTemperatureInfo(
+            weatherInfo,
+            Modifier
+                .weight(1f)
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                )
+        )
+        WindInfo(
+            weatherInfo,
+            Modifier
+                .weight(1f)
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                )
+        )
+        AirInfo(
+            weatherInfo,
+            Modifier
+                .weight(1f)
+                .placeholder(
+                    visible = currentLocalPlaceholder.current, color = Purple500,
+                    highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                    shape = RoundedCornerShape(4.dp)
+                )
+        )
     }
 }
 
@@ -310,6 +365,11 @@ fun Future24Info() {
         Modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            .placeholder(
+                visible = currentLocalPlaceholder.current, color = Purple500,
+                highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                shape = RoundedCornerShape(4.dp)
+            )
     ) {
         val (titleRef, contentRef) = remember {
             createRefs()
@@ -350,6 +410,11 @@ fun ItemInfo(dayInfo: DayInfo) {
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(top = 10.dp)
+            .placeholder(
+                visible = currentLocalPlaceholder.current, color = Purple500,
+                highlight = PlaceholderHighlight.shimmer(highlightColor = plackholderColor),
+                shape = RoundedCornerShape(4.dp)
+            )
     ) {
 
         val (timeRef, stateRef, winRef) = remember {

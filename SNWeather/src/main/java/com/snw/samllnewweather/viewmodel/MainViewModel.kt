@@ -12,6 +12,7 @@ import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
 import com.snw.samllnewweather.net.SNNetService
 import com.snw.samllnewweather.screen.WeatherInfo
+import com.snw.samllnewweather.screen.randomData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -24,9 +25,11 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val snapi: SNNetService,
     @ApplicationContext private val context: Context
-
 ) : ViewModel() {
 
+    private val _showPlaceholder = MutableStateFlow(true)
+    val showPlaceholder: StateFlow<Boolean>
+        get() = _showPlaceholder.asStateFlow()
 
     private var city: String = ""
     private val _isRefresing = MutableStateFlow(false)
@@ -36,12 +39,13 @@ class MainViewModel @Inject constructor(
     private val _errMsg = MutableStateFlow("")
     val errMsg: StateFlow<String>
         get() = _errMsg.asStateFlow()
-    private val _weatherData = MutableStateFlow<WeatherInfo>(WeatherInfo())
+    private val _weatherData = MutableStateFlow<WeatherInfo>(randomData())
     val weatherData: StateFlow<WeatherInfo>
         get() = _weatherData.asStateFlow()
 
     private var loc = ""
     fun refresh(location: String = loc) {
+        viewModelScope.launch { _showPlaceholder.emit(true) }
         this.loc = location
         if (loc.isNullOrEmpty()) {
             return
@@ -84,6 +88,7 @@ class MainViewModel @Inject constructor(
                 }
                 .collect {
                     _weatherData.emit(it)
+                    _showPlaceholder.emit(false)
                     _isRefresing.emit(false)
                 }
         }
