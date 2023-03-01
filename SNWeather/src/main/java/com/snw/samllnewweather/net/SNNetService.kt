@@ -29,5 +29,9 @@ interface SNNetService {
         @Query("location") location: String,
     ): Flow<AirInfoResponse>
 
+    @GET("v2/city/lookup")
+    fun getAddressInfo(
+        @Query("location") location: String,
+    ): Flow<AddressInfoResponse>
 
 }

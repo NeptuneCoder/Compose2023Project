@@ -2,12 +2,15 @@ package com.snw.samllnewweather.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
+@Entity(tableName = "day_info_table")
 @Parcelize
 data class DayInfo(
     val cloud: String,
-    val fxDate: String,
+    @PrimaryKey val fxDate: String,
     val humidity: String,
     val iconDay: String,
     var iconDayId: Int,

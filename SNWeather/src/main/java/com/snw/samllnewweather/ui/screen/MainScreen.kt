@@ -1,14 +1,11 @@
 package com.snw.samllnewweather.ui.screen
 
-import android.graphics.fonts.FontStyle
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -17,8 +14,6 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.text.SpanStyle
@@ -39,8 +34,6 @@ import com.snw.samllnewweather.ext.smPlaceholder
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.ui.theme.BgColor
-import com.snw.samllnewweather.ui.theme.Purple500
-import com.snw.samllnewweather.ui.theme.plackholderColor
 import com.snw.samllnewweather.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -117,12 +110,16 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
                     Spacer(modifier = Modifier.height(14.dp))
                     DetailInfo(weatherInfo)
                     Spacer(modifier = Modifier.height(14.dp))
-                    Text(text = "未来7天天气情况", fontSize = 18.sp)
+                    Text(
+                        text = "未来7天天气情况",
+                        fontSize = 18.sp,
+                        modifier = Modifier.smPlaceholder(currentLocalPlaceholder.current)
+                    )
                     Spacer(modifier = Modifier.height(14.dp))
 
                 }
                 items(dayData.size) {
-                    ItemInfo(dayInfo = dayData[it])
+                    ItemDayInfo(dayInfo = dayData[it])
                 }
             }
 
@@ -190,11 +187,13 @@ fun MainInfo() {
 
         Image(
             painter = painterResource(id = currentLocalData.current.icon),
-            contentDescription = null, modifier = Modifier.constrainAs(iconRef) {
-                absoluteRight.linkTo(temperatureRef.absoluteLeft)
-                top.linkTo(temperatureRef.top)
-                bottom.linkTo(temperatureRef.bottom)
-            }
+            contentDescription = null, modifier = Modifier
+                .constrainAs(iconRef) {
+                    absoluteRight.linkTo(temperatureRef.absoluteLeft)
+                    top.linkTo(temperatureRef.top)
+                    bottom.linkTo(temperatureRef.bottom)
+                }
+                .smPlaceholder(currentLocalPlaceholder.current)
         )
         Text(
             text = "${currentLocalData.current.temp}",
@@ -256,18 +255,21 @@ fun DetailInfo(weatherInfo: WeatherInfo) {
             Modifier
                 .weight(1f)
                 .smPlaceholder(currentLocalPlaceholder.current)
+                .padding(end = 10.dp)
         )
         WindInfo(
             weatherInfo,
             Modifier
                 .weight(1f)
                 .smPlaceholder(currentLocalPlaceholder.current)
+                .padding(end = 10.dp, start = 10.dp)
         )
         AirInfo(
             weatherInfo,
             Modifier
                 .weight(1f)
                 .smPlaceholder(currentLocalPlaceholder.current)
+                .padding(start = 10.dp)
         )
     }
 }
@@ -351,7 +353,7 @@ fun Future24Info() {
         Text(text = "未来24小时", Modifier.constrainAs(titleRef) {
             absoluteLeft.linkTo(parent.absoluteLeft)
             top.linkTo(parent.top)
-        }, fontSize = 16.sp)
+        }, fontSize = 18.sp)
         LazyRow(
             Modifier
                 .constrainAs(contentRef) {
@@ -366,7 +368,7 @@ fun Future24Info() {
                         .padding(end = 10.dp)
                 ) {
                     Text(
-                        text = data.fxTime.formatTime(SimpleDateFormat("HH")) + "时",
+                        text = data.fxTime.formatTime(SimpleDateFormat("HH")) + " 时",
                         Modifier
                             .padding(end = 10.dp)
                             .wrapContentSize(), fontSize = 12.sp
@@ -377,10 +379,10 @@ fun Future24Info() {
                             painter = painterResource(id = data.iconId),
                             contentDescription = null,
                         )
-                        Text(text = data.temp.formatTemp())
+                        Text(text = " " + data.temp.formatTemp())
                     }
                     Text(
-                        text = data.windDir + ": " + data.windScale.replace(
+                        text = data.windDir + " : " + data.windScale.replace(
                             "-",
                             "~"
                         ),
@@ -398,7 +400,7 @@ fun Future24Info() {
 
 
 @Composable
-fun ItemInfo(dayInfo: DayInfo) {
+fun ItemDayInfo(dayInfo: DayInfo) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()

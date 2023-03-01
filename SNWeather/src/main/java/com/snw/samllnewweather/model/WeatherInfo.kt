@@ -2,6 +2,7 @@ package com.snw.samllnewweather.screen
 
 import android.os.Parcelable
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.snw.samllnewweather.R
 import com.snw.samllnewweather.model.DayInfo
@@ -24,7 +25,8 @@ val airLevelList: List<String> = listOf("98", "96", "94", "92", "90", "86", "84"
 @Parcelize
 @Entity(tableName = "weather_info_table")
 data class WeatherInfo(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0,
     var address: String = "",
     var publishTime: String = "",
     var temp: String = "",
@@ -40,7 +42,10 @@ data class WeatherInfo(
     var airState: String = "",
     var airAqi: String = "",
     var locationGps: String = "",
+    var timestamp: Long = System.currentTimeMillis(),
+    @Ignore
     var futureHours: List<HourInfo> = listOf(),
+    @Ignore
     var futureDays: List<DayInfo> = listOf()
 ) : Parcelable
 

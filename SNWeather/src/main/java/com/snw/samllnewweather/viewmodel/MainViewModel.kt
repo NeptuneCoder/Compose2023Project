@@ -8,15 +8,18 @@ import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
+import com.snw.samllnewweather.db.WeatherInfoDao
 import com.snw.samllnewweather.ext.formatResourceId
 import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
+import com.snw.samllnewweather.model.RealTimeInfoResponse
 import com.snw.samllnewweather.net.SNNetService
 import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.screen.randomData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,7 +28,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val snapi: SNNetService,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val dao: WeatherInfoDao
 ) : ViewModel() {
 
     private val _showPlaceholder = MutableStateFlow(true)
@@ -43,22 +47,31 @@ class MainViewModel @Inject constructor(
     private val _weatherData = MutableStateFlow<WeatherInfo>(randomData())
     val weatherData: StateFlow<WeatherInfo>
         get() = _weatherData.asStateFlow()
-
+    private var updateTime: Long = 0
     private var loc = ""
     fun refresh(location: String = loc) {
+        Log.i("dao", "dao is null =${dao == null}")
         viewModelScope.launch { _showPlaceholder.emit(true) }
         this.loc = location
-        if (loc.isNullOrEmpty()) {
+        if (loc.isEmpty() || System.currentTimeMillis() - updateTime < 1 * 1000 * 60) {
+
+            viewModelScope.launch {
+                delay(300)
+                _showPlaceholder.emit(false)
+                _isRefresing.emit(false)
+            }
             return
         }
         viewModelScope.launch {
             _isRefresing.emit(true)
             //请求网络加载数据
+
             snapi.getRealTimeInfo(location)
                 .zip(snapi.getHourInfo(location)) { source1, source2 ->
                     val result = WeatherInfo()
+                    result.locationGps = location
                     with(source1.now) {
-                        result.address = "UnKnow"
+                        result.address = ""
                         result.publishTime = source1.updateTime.formatTime()
                         result.temp = temp.formatTemp()
 
@@ -71,11 +84,10 @@ class MainViewModel @Inject constructor(
                         result.text = text
                         result.windDirect = windDir
                         result.windLevel = windScale
-                    }
 
+                    }
                     source2.hourly.formatResourceId(context.applicationContext)
                     result.futureHours = source2.hourly
-
                     result
 
                 }.zip(snapi.getDayInfo(location)) { source3, source4 ->
@@ -90,19 +102,43 @@ class MainViewModel @Inject constructor(
                 }.zip(snapi.getAirInfo(location)) { source5, source6 ->
                     source5.airAqi = source6.now.aqi
                     source5.airState = source6.now.category
+
                     source5
                 }.flowOn(Dispatchers.IO)
                 .catch {
                     _isRefresing.emit(false)
                     _errMsg.emit(it.toString() + "loc" + location)
+                }.map {
+//                    dao.insertBaseInfo(it)
+//                    it.futureHours.forEach {
+//                        dao.insertHourInfo(it)
+//                    }
+//                    it.futureDays.forEach {
+//                        dao.insertDayInfo(it)
+//                    }
+                    it
                 }
                 .collect {
+                    updateTime = System.currentTimeMillis()
                     _weatherData.emit(it)
                     _showPlaceholder.emit(false)
                     _isRefresing.emit(false)
                 }
         }
     }
+
+
+    fun findMax(list: List<WeatherInfo>): WeatherInfo {
+        return list.reduce { a: WeatherInfo, b: WeatherInfo ->
+            Log.i("baseInfo", " a = ${a.timestamp}    b = ${b.timestamp}")
+            if (a.timestamp > b.timestamp) {
+                a
+            } else {
+                b
+            }
+        };
+    }
+
 
     lateinit var mLocationClient: LocationClient
     private val myListener = MyLocationListener(this)
