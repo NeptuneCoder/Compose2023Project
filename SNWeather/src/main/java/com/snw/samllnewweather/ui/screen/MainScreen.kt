@@ -2,8 +2,10 @@ package com.snw.samllnewweather.ui.screen
 
 import android.graphics.fonts.FontStyle
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -40,6 +43,7 @@ import com.snw.samllnewweather.ui.theme.Purple500
 import com.snw.samllnewweather.ui.theme.plackholderColor
 import com.snw.samllnewweather.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
@@ -72,6 +76,7 @@ fun HomeScreen(
 
 val currentLocalData = compositionLocalOf { WeatherInfo() }
 val currentLocalPlaceholder = compositionLocalOf { true }
+
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -181,14 +186,16 @@ fun MainInfo() {
         val (temperatureRef, riseTimeRef, infoRef, downTimeRef, iconRef) = remember {
             createRefs()
         }
-//        Image(
-//            painter = painterResource(id = R.drawable.ic_launcher_background),
-//            contentDescription = null, modifier = Modifier.constrainAs(iconRef) {
-//                absoluteRight.linkTo(temperatureRef.absoluteLeft)
-//                top.linkTo(temperatureRef.top)
-//                bottom.linkTo(temperatureRef.bottom)
-//            }
-//        )
+
+
+        Image(
+            painter = painterResource(id = currentLocalData.current.icon),
+            contentDescription = null, modifier = Modifier.constrainAs(iconRef) {
+                absoluteRight.linkTo(temperatureRef.absoluteLeft)
+                top.linkTo(temperatureRef.top)
+                bottom.linkTo(temperatureRef.bottom)
+            }
+        )
         Text(
             text = "${currentLocalData.current.temp}",
             modifier = Modifier
@@ -354,16 +361,36 @@ fun Future24Info() {
                 .padding(top = 6.dp)) {
             items(size) {
                 val data = data.get(it)
-                Text(
-                    text = data.fxTime.formatTime() + "\n" + data.text + "\n" + data.windDir + ": " + data.windScale.replace(
-                        "-",
-                        "~"
-                    ) + "\n" + data.temp.formatTemp(),
+                Column(
                     Modifier
                         .padding(end = 10.dp)
-                        .wrapContentSize(), fontSize = 12.sp
+                ) {
+                    Text(
+                        text = data.fxTime.formatTime(SimpleDateFormat("HH")) + "时",
+                        Modifier
+                            .padding(end = 10.dp)
+                            .wrapContentSize(), fontSize = 12.sp
+                    )
 
-                )
+                    Row {
+                        Image(
+                            painter = painterResource(id = data.iconId),
+                            contentDescription = null,
+                        )
+                        Text(text = data.temp.formatTemp())
+                    }
+                    Text(
+                        text = data.windDir + ": " + data.windScale.replace(
+                            "-",
+                            "~"
+                        ),
+                        Modifier
+                            .padding(end = 10.dp)
+                            .wrapContentSize(), fontSize = 12.sp
+
+                    )
+                }
+
             }
         }
     }

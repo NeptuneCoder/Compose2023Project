@@ -10,6 +10,7 @@ data class HourInfo(
     val fxTime: String,
     val humidity: String,
     val icon: String,
+    var iconId: Int,
     val pop: String,
     val precip: String,
     val pressure: String,

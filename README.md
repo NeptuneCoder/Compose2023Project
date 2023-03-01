@@ -8,7 +8,7 @@
 ##### 项目架构及三方SDK说明
 1. 项目采用mvi架构；原生组件有：Compose + ViewModel + Hilt + retrofit + Room  + Flow + accompanist*
 2. 第三方sdk：百度地图sdk.和风api
-##### 顺便实现了一个批量将svg转成png的方法
+##### java版批量将svg转成png的方法
 项目地址:https://github.com/HaiYangCode/svg2png
 
 ###### [小新天气apk下载](https://raw.githubusercontent.com/HaiYangCode/Compose2023Project/main/SNWeather/release/SNWeather-release.apk)

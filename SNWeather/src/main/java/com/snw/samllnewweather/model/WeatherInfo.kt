@@ -3,6 +3,7 @@ package com.snw.samllnewweather.screen
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.snw.samllnewweather.R
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.model.HourInfo
 import kotlinx.parcelize.Parcelize
@@ -27,6 +28,7 @@ data class WeatherInfo(
     var address: String = "",
     var publishTime: String = "",
     var temp: String = "",
+    var icon: Int = R.drawable.icon_100,
     var riseTime: String = "",
     var downTime: String = "",
     var tempMax: String = "",

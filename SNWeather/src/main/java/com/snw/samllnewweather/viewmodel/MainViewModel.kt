@@ -8,6 +8,7 @@ import com.baidu.location.BDAbstractLocationListener
 import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
+import com.snw.samllnewweather.ext.formatResourceId
 import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
 import com.snw.samllnewweather.net.SNNetService
@@ -60,11 +61,19 @@ class MainViewModel @Inject constructor(
                         result.address = "UnKnow"
                         result.publishTime = source1.updateTime.formatTime()
                         result.temp = temp.formatTemp()
+
+                        result.icon = context.applicationContext.resources.getIdentifier(
+                            "icon_" + icon,
+                            "drawable",
+                            context.applicationContext.packageName
+                        )
                         result.feelTemp = feelsLike
                         result.text = text
                         result.windDirect = windDir
                         result.windLevel = windScale
                     }
+
+                    source2.hourly.formatResourceId(context.applicationContext)
                     result.futureHours = source2.hourly
 
                     result
@@ -75,6 +84,7 @@ class MainViewModel @Inject constructor(
                     source3.downTime = dayInfo.sunset
                     source3.tempMax = dayInfo.tempMax.formatTemp()
                     source3.tempMin = dayInfo.tempMin.formatTemp()
+                    source4.daily.formatResourceId(context.applicationContext)
                     source3.futureDays = source4.daily
                     source3
                 }.zip(snapi.getAirInfo(location)) { source5, source6 ->
