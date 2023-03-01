@@ -12,8 +12,8 @@ import com.snw.samllnewweather.db.WeatherInfoDao
 import com.snw.samllnewweather.ext.formatResourceId
 import com.snw.samllnewweather.ext.formatTemp
 import com.snw.samllnewweather.ext.formatTime
-import com.snw.samllnewweather.model.RealTimeInfoResponse
-import com.snw.samllnewweather.net.SNNetService
+import com.snw.samllnewweather.net.AddressInfoService
+import com.snw.samllnewweather.net.WeatherInfoService
 import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.screen.randomData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +27,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val snapi: SNNetService,
+    private val weatherApi: WeatherInfoService,
+    private val addressApi: AddressInfoService,
     @ApplicationContext private val context: Context,
     private val dao: WeatherInfoDao
 ) : ViewModel() {
@@ -36,7 +37,6 @@ class MainViewModel @Inject constructor(
     val showPlaceholder: StateFlow<Boolean>
         get() = _showPlaceholder.asStateFlow()
 
-    private var city: String = ""
     private val _isRefresing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean>
         get() = _isRefresing.asStateFlow()
@@ -56,6 +56,7 @@ class MainViewModel @Inject constructor(
         if (loc.isEmpty() || System.currentTimeMillis() - updateTime < 1 * 1000 * 60) {
 
             viewModelScope.launch {
+                _isRefresing.emit(true)
                 delay(300)
                 _showPlaceholder.emit(false)
                 _isRefresing.emit(false)
@@ -65,13 +66,12 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             _isRefresing.emit(true)
             //请求网络加载数据
-
-            snapi.getRealTimeInfo(location)
-                .zip(snapi.getHourInfo(location)) { source1, source2 ->
+            addressApi.getAddressInfo(location)
+                .zip(weatherApi.getRealTimeInfo(location)) { source0, source1 ->
                     val result = WeatherInfo()
                     result.locationGps = location
+                    result.address = source0.location.get(0).name
                     with(source1.now) {
-                        result.address = ""
                         result.publishTime = source1.updateTime.formatTime()
                         result.temp = temp.formatTemp()
 
@@ -84,13 +84,14 @@ class MainViewModel @Inject constructor(
                         result.text = text
                         result.windDirect = windDir
                         result.windLevel = windScale
-
                     }
+                    result
+                }
+                .zip(weatherApi.getHourInfo(location)) { result, source2 ->
                     source2.hourly.formatResourceId(context.applicationContext)
                     result.futureHours = source2.hourly
                     result
-
-                }.zip(snapi.getDayInfo(location)) { source3, source4 ->
+                }.zip(weatherApi.getDayInfo(location)) { source3, source4 ->
                     val dayInfo = source4.daily[0]
                     source3.riseTime = dayInfo.sunrise
                     source3.downTime = dayInfo.sunset
@@ -99,7 +100,7 @@ class MainViewModel @Inject constructor(
                     source4.daily.formatResourceId(context.applicationContext)
                     source3.futureDays = source4.daily
                     source3
-                }.zip(snapi.getAirInfo(location)) { source5, source6 ->
+                }.zip(weatherApi.getAirInfo(location)) { source5, source6 ->
                     source5.airAqi = source6.now.aqi
                     source5.airState = source6.now.category
 
@@ -108,17 +109,7 @@ class MainViewModel @Inject constructor(
                 .catch {
                     _isRefresing.emit(false)
                     _errMsg.emit(it.toString() + "loc" + location)
-                }.map {
-//                    dao.insertBaseInfo(it)
-//                    it.futureHours.forEach {
-//                        dao.insertHourInfo(it)
-//                    }
-//                    it.futureDays.forEach {
-//                        dao.insertDayInfo(it)
-//                    }
-                    it
-                }
-                .collect {
+                }.collect {
                     updateTime = System.currentTimeMillis()
                     _weatherData.emit(it)
                     _showPlaceholder.emit(false)

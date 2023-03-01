@@ -26,8 +26,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 @ExperimentalMaterialApi
 class MainActivity : ComponentActivity() {
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -41,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     val drawerState =
                         rememberScaffoldState(drawerState = rememberDrawerState(DrawerValue.Closed))
                     val coroutine = rememberCoroutineScope()
-                    FeatureThatRequiresCameraPermission(viewModel, drawerState)
+                    FeatureThatRequiresCameraPermission(viewModel)
                     HomeScreen(viewModel, chooseLocationClick = {
                         coroutine.launch { drawerState.drawerState.open() }
                     }, drawerState = drawerState)
@@ -56,7 +54,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalPermissionsApi::class)
 @ExperimentalPermissionsApi
 @Composable
-fun FeatureThatRequiresCameraPermission(viewModel: MainViewModel, scaffoldState: ScaffoldState) {
+fun FeatureThatRequiresCameraPermission(viewModel: MainViewModel) {
 
     val cameraPermissionState =
         rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
