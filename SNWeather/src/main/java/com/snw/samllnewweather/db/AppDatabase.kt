@@ -7,11 +7,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.model.HourInfo
+import com.snw.samllnewweather.model.Location
 import com.snw.samllnewweather.screen.WeatherInfo
 
 val DB_NAME = "sn_data_base.db"
 
-@Database(entities = [(WeatherInfo::class), (HourInfo::class), (DayInfo::class)], version = 3)
+@Database(
+    entities = [(WeatherInfo::class), (HourInfo::class), (DayInfo::class), (Location::class)],
+    version = 4
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherInfoDao
 

@@ -3,6 +3,7 @@ package com.snw.samllnewweather.db
 import androidx.room.*
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.model.HourInfo
+import com.snw.samllnewweather.model.Location
 import com.snw.samllnewweather.screen.WeatherInfo
 
 @Dao
@@ -35,5 +36,23 @@ interface WeatherInfoDao {
     @Delete
     suspend fun deleteDayDataById(dayInfo: DayInfo)
 
+
+    @Insert
+    suspend fun insertLocationInfo(info: Location)
+
+    /**
+     * SELECT
+     *
+    FROM
+    table_a
+    WHERE
+    p_postions = (SELECT MAX(p_postions) FROM table_a)
+    LIMIT 1;
+     */
+    @Query("SELECT * FROM location_info_table WHERE timeTamp =(SELECT MAX(timeTamp) FROM location_info_table) LIMIT 1")
+    suspend fun getLocationInfo(): Location
+
+    @Delete
+    suspend fun deleteLocationDataById(location: Location)
 
 }

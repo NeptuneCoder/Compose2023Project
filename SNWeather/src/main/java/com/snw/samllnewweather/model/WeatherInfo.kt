@@ -49,7 +49,11 @@ data class WeatherInfo(
     var futureHours: List<HourInfo> = listOf(),
     @Ignore
     var futureDays: List<DayInfo> = listOf()
-) : Parcelable
+) : Parcelable {
+    fun lessThan5Min(): Boolean {
+        return System.currentTimeMillis() - this.timestamp < 5 * 1000 * 60
+    }
+}
 
 fun randomData(): WeatherInfo {
     val weatherData = WeatherInfo(
