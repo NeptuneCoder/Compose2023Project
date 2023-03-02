@@ -1,6 +1,7 @@
 package com.snw.samllnewweather.ext
 
 import android.content.Context
+import android.util.Log
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.model.HourInfo
 import com.snw.samllnewweather.screen.WeatherInfo
@@ -41,6 +42,7 @@ fun HourInfo.formatResourceId(context: Context) {
         "drawable",
         context.applicationContext.packageName
     )
+    Log.i("iconId", "icon  = $icon      iconId == ${iconId}")
 
 }
 

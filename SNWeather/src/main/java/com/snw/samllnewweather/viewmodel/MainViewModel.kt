@@ -154,7 +154,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             weatherApi.getHourInfo(loc).flowOn(Dispatchers.IO).collect {
                 //TODO 更新本地数据，拿到时间最大的插入到本地
-                dao.insertHourInfo(it.hourly.findLastMaxHour())
+                val data = it.hourly.findLastMaxHour()
+                data.cityId = weatherInfo.cityId
+                data.cityName = weatherInfo.cityName
+                data.formatResourceId(context)
+                dao.insertHourInfo(data)
                 weatherInfo.futureHours = dao.getHourInfo(weatherInfo.cityId, weatherInfo.cityName)
                 loadDayDataByLocal(weatherInfo)
             }
@@ -185,7 +189,11 @@ class MainViewModel @Inject constructor(
     private fun loadDayDataByNet(weatherInfo: WeatherInfo) {
         viewModelScope.launch {
             weatherApi.getDayInfo(loc).flowOn(Dispatchers.IO).collect {
-                dao.insertDayInfo(it.daily.findLastMaxDay())
+                val dayInfo = it.daily.findLastMaxDay()
+                dayInfo.cityId = weatherInfo.cityId
+                dayInfo.cityName = weatherInfo.cityName
+                dayInfo.formatResourceId(context)
+                dao.insertDayInfo(dayInfo)
                 weatherInfo.futureDays = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
                 _weatherData.emit(weatherInfo)
                 _showPlaceholder.emit(false)
@@ -244,6 +252,7 @@ class MainViewModel @Inject constructor(
                 }.map { weather ->
                     dao.insertBaseInfo(weather)
                     weather.futureHours.forEach {
+                        it.formatResourceId(context)
                         it.cityId = weather.cityId
                         it.cityName = weather.cityName
                         dao.insertHourInfo(it)
@@ -251,6 +260,7 @@ class MainViewModel @Inject constructor(
                     weather.futureDays.forEach {
                         it.cityId = weather.cityId
                         it.cityName = weather.cityName
+                        it.formatResourceId(context)
                         dao.insertDayInfo(it)
                     }
                     weather

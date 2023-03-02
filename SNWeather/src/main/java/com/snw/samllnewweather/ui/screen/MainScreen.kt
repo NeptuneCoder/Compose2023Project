@@ -381,6 +381,7 @@ fun Future24Info() {
                         )
                         Text(text = " " + data.temp.formatTemp())
                     }
+
                     Text(
                         text = data.windDir + " : " + data.windScale.replace(
                             "-",
