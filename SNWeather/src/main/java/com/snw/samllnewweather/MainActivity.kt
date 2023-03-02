@@ -2,6 +2,7 @@ package com.snw.samllnewweather
 
 import android.Manifest
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -62,6 +63,7 @@ fun FeatureThatRequiresCameraPermission(viewModel: MainViewModel) {
         when {
             cameraPermissionState.hasPermission -> {
                 viewModel.startLocation()
+                Log.i("mLocationClient", "用户允许权限")
             }
             else -> {
                 if (cameraPermissionState.shouldShowRationale) {

@@ -54,9 +54,8 @@ class MainViewModel @Inject constructor(
 
 
     fun refresh(location: String = loc) {
-
-
         this.loc = location
+        Log.i("mLocationClient", "开始刷新刷新，经纬度：$loc")
         if (loc.isEmpty()) {
             return
         }
@@ -81,19 +80,30 @@ class MainViewModel @Inject constructor(
                             //
                         } else {
                             //TODO 立刻查询天气
-                            dao.deleteCurrentDataById(weatherInfo)
-                            loadCurrentDataByNet(loc)
+
+                            loadCurrentDataByNet(weatherInfo, loc)
                         }
                     }
                 }
         }
     }
 
-    private fun loadCurrentDataByNet(location: String) {
+    /**
+     * 查询实时的天气
+     */
+    private fun loadCurrentDataByNet(oldInfo: WeatherInfo, location: String) {
         viewModelScope.launch {
             addressApi.getAddressInfo(location)
                 .zip(weatherApi.getRealTimeInfo(location)) { source0, source1 ->
                     val result = WeatherInfo()
+                    result.tempMax = oldInfo.tempMax
+                    result.tempMin = oldInfo.tempMin
+                    result.riseTime = oldInfo.riseTime
+                    result.downTime = oldInfo.downTime
+                    result.airState = oldInfo.airState
+                    result.airAqi = oldInfo.airAqi
+                    result.cityId = source0.location[0].id
+                    result.cityName = source0.location[0].name
                     result.locationGps = location
                     result.address = source0.location.get(0).name
                     with(source1.now) {
@@ -110,9 +120,11 @@ class MainViewModel @Inject constructor(
                         result.windDirect = windDir
                         result.windLevel = windScale
                     }
+
                     result
                 }.flowOn(Dispatchers.IO).collect {
                     dao.insertBaseInfo(it)
+
                     loadHourDataByLocal(it)
                 }
         }
@@ -262,10 +274,12 @@ class MainViewModel @Inject constructor(
 
     init {
         initLocaionClient()
+        startLocation()
     }
 
     fun startLocation() {
         mLocationClient.start()
+        Log.i("mLocationClient", "调用开启定位功能")
     }
 
     private fun initLocaionClient() {
@@ -317,10 +331,12 @@ class MainViewModel @Inject constructor(
             //更多结果信息获取说明，请参照类参考中BDLocation类中的说明
             if (location != null) {
                 //获取纬度信息
+                Log.i("mLocationClient", "定位调用回调  location.locType == ${location.locType}")
                 val latitude: Double = location.getLatitude()
                 //获取经度信息
                 val longitude: Double = location.getLongitude()
                 if (location.locType == 61 || location.locType == 161) {
+                    Log.i("mLocationClient", "定位调用回调成功")
                     if (!viewModel.isRefreshing.value) {//避免定位成功后多次调用
                         viewModel.refresh(
                             "$longitude,$latitude"
