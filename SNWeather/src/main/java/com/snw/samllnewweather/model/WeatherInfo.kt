@@ -43,6 +43,8 @@ data class WeatherInfo(
     var airAqi: String = "",
     var locationGps: String = "",
     var timestamp: Long = System.currentTimeMillis(),
+    var cityName: String = "",
+    var cityId: String = "",
     @Ignore
     var futureHours: List<HourInfo> = listOf(),
     @Ignore

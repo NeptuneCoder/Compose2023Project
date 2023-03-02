@@ -11,7 +11,7 @@ import com.snw.samllnewweather.screen.WeatherInfo
 
 val DB_NAME = "sn_data_base.db"
 
-@Database(entities = [(WeatherInfo::class), (HourInfo::class), (DayInfo::class)], version = 2)
+@Database(entities = [(WeatherInfo::class), (HourInfo::class), (DayInfo::class)], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherInfoDao
 

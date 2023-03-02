@@ -9,19 +9,21 @@ import com.baidu.location.BDLocation
 import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.snw.samllnewweather.db.WeatherInfoDao
-import com.snw.samllnewweather.ext.formatResourceId
-import com.snw.samllnewweather.ext.formatTemp
-import com.snw.samllnewweather.ext.formatTime
+import com.snw.samllnewweather.ext.*
+import com.snw.samllnewweather.model.DayInfo
+import com.snw.samllnewweather.model.HourInfo
 import com.snw.samllnewweather.net.AddressInfoService
 import com.snw.samllnewweather.net.WeatherInfoService
 import com.snw.samllnewweather.screen.WeatherInfo
 import com.snw.samllnewweather.screen.randomData
+import com.snw.samllnewweather.utils.getCurrentDayTime
+import com.snw.samllnewweather.utils.getCurrentHourTime
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 
@@ -49,28 +51,150 @@ class MainViewModel @Inject constructor(
         get() = _weatherData.asStateFlow()
     private var updateTime: Long = 0
     private var loc = ""
-    fun refresh(location: String = loc) {
-        Log.i("dao", "dao is null =${dao == null}")
-        viewModelScope.launch { _showPlaceholder.emit(true) }
-        this.loc = location
-        if (loc.isEmpty() || System.currentTimeMillis() - updateTime < 1 * 1000 * 60) {
 
-            viewModelScope.launch {
-                _isRefresing.emit(true)
-                delay(300)
-                _showPlaceholder.emit(false)
-                _isRefresing.emit(false)
-            }
+
+    fun refresh(location: String = loc) {
+
+
+        this.loc = location
+        if (loc.isEmpty()) {
             return
         }
         viewModelScope.launch {
+            _showPlaceholder.emit(true)
             _isRefresing.emit(true)
-            //请求网络加载数据
+        }
+        stopLocation()
+        viewModelScope.launch {
+            addressApi.getAddressInfo(location)
+                .flowOn(Dispatchers.IO).collect {
+                    val address = it.location[0]
+                    val weatherInfoList = dao.getBaseInfo(address.id, address.name)
+                    if (weatherInfoList.isEmpty()) {
+                        //TODO 第一次加载数据
+                        initLoadData(location)
+                    } else {
+                        val weatherInfo = weatherInfoList.findLastNewInfo()
+                        if (System.currentTimeMillis() - weatherInfo.timestamp < 5 * 1000 * 60) {
+                            //TODO 直接查询当前天气
+                            loadHourDataByLocal(weatherInfo)
+                            //
+                        } else {
+                            //TODO 立刻查询天气
+                            dao.deleteCurrentDataById(weatherInfo)
+                            loadCurrentDataByNet(loc)
+                        }
+                    }
+                }
+        }
+    }
+
+    private fun loadCurrentDataByNet(location: String) {
+        viewModelScope.launch {
             addressApi.getAddressInfo(location)
                 .zip(weatherApi.getRealTimeInfo(location)) { source0, source1 ->
                     val result = WeatherInfo()
                     result.locationGps = location
                     result.address = source0.location.get(0).name
+                    with(source1.now) {
+                        result.publishTime = source1.updateTime.formatTime()
+                        result.temp = temp.formatTemp()
+
+                        result.icon = context.applicationContext.resources.getIdentifier(
+                            "icon_" + icon,
+                            "drawable",
+                            context.applicationContext.packageName
+                        )
+                        result.feelTemp = feelsLike
+                        result.text = text
+                        result.windDirect = windDir
+                        result.windLevel = windScale
+                    }
+                    result
+                }.flowOn(Dispatchers.IO).collect {
+                    dao.insertBaseInfo(it)
+                    loadHourDataByLocal(it)
+                }
+        }
+    }
+
+
+    /**
+    TODO 判断最新小时数据;
+    当前的事件小于最小的时间说明就是最新数据；否则更新小时数据;并把请求的最远时间的数据更新本地最小时间的数据
+     */
+    private fun loadHourDataByLocal(weatherInfo: WeatherInfo) {
+        viewModelScope.launch {
+            val hourInfoList = dao.getHourInfo(weatherInfo.cityId, weatherInfo.cityName)
+            val findLastMinTime = hourInfoList.findLastMinHour()
+
+            if (findLastMinTime.toHourDateLong() <= getCurrentHourTime()) {
+                dao.deleteHourDataById(findLastMinTime)
+                loadHourDataByNet(weatherInfo)
+            } else {
+                weatherInfo.futureHours = hourInfoList
+                loadDayDataByLocal(weatherInfo)
+            }
+        }
+    }
+
+    private fun loadHourDataByNet(weatherInfo: WeatherInfo) {
+        viewModelScope.launch {
+            weatherApi.getHourInfo(loc).flowOn(Dispatchers.IO).collect {
+                //TODO 更新本地数据，拿到时间最大的插入到本地
+                dao.insertHourInfo(it.hourly.findLastMaxHour())
+                weatherInfo.futureHours = dao.getHourInfo(weatherInfo.cityId, weatherInfo.cityName)
+                loadDayDataByLocal(weatherInfo)
+            }
+        }
+    }
+
+    /**
+    TODO 判断最新小时数据;
+    当前的事件小于最小的时间说明就是最新数据；否则更新小时数据;并把请求的最远时间的数据更新本地最小时间的数据
+     */
+    private fun loadDayDataByLocal(weatherInfo: WeatherInfo) {
+        viewModelScope.launch {
+            val dayInfoList = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
+            val findLastMinTime = dayInfoList.findLastMinDay()
+            if (findLastMinTime.toDayDateLong() < getCurrentDayTime()) {
+                dao.deleteDayDataById(findLastMinTime)
+                loadDayDataByNet(weatherInfo)
+            } else {
+                weatherInfo.futureDays = dayInfoList
+                _weatherData.emit(weatherInfo)
+                _showPlaceholder.emit(false)
+                _isRefresing.emit(false)
+            }
+
+        }
+    }
+
+    private fun loadDayDataByNet(weatherInfo: WeatherInfo) {
+        viewModelScope.launch {
+            weatherApi.getDayInfo(loc).flowOn(Dispatchers.IO).collect {
+                dao.insertDayInfo(it.daily.findLastMaxDay())
+                weatherInfo.futureDays = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
+                _weatherData.emit(weatherInfo)
+                _showPlaceholder.emit(false)
+                _isRefresing.emit(false)
+            }
+        }
+    }
+
+    private fun initLoadData(location: String) {
+        viewModelScope.launch {
+
+            //请求网络加载数据
+            addressApi.getAddressInfo(location)
+                .zip(weatherApi.getRealTimeInfo(location)) { source0, source1 ->
+                    val result = WeatherInfo()
+                    result.locationGps = location
+                    with(source0.location.get(0)) {
+                        result.address = name
+                        result.cityId = id
+                        result.cityName = name
+                    }
                     with(source1.now) {
                         result.publishTime = source1.updateTime.formatTime()
                         result.temp = temp.formatTemp()
@@ -105,8 +229,22 @@ class MainViewModel @Inject constructor(
                     source5.airState = source6.now.category
 
                     source5
+                }.map { weather ->
+                    dao.insertBaseInfo(weather)
+                    weather.futureHours.forEach {
+                        it.cityId = weather.cityId
+                        it.cityName = weather.cityName
+                        dao.insertHourInfo(it)
+                    }
+                    weather.futureDays.forEach {
+                        it.cityId = weather.cityId
+                        it.cityName = weather.cityName
+                        dao.insertDayInfo(it)
+                    }
+                    weather
                 }.flowOn(Dispatchers.IO)
                 .catch {
+                    Log.i("throwable", "throwable == $it")
                     _isRefresing.emit(false)
                     _errMsg.emit(it.toString() + "loc" + location)
                 }.collect {
@@ -116,18 +254,6 @@ class MainViewModel @Inject constructor(
                     _isRefresing.emit(false)
                 }
         }
-    }
-
-
-    fun findMax(list: List<WeatherInfo>): WeatherInfo {
-        return list.reduce { a: WeatherInfo, b: WeatherInfo ->
-            Log.i("baseInfo", " a = ${a.timestamp}    b = ${b.timestamp}")
-            if (a.timestamp > b.timestamp) {
-                a
-            } else {
-                b
-            }
-        };
     }
 
 
@@ -194,24 +320,13 @@ class MainViewModel @Inject constructor(
                 val latitude: Double = location.getLatitude()
                 //获取经度信息
                 val longitude: Double = location.getLongitude()
-                Log.i(
-                    "location",
-                    "latitude = $latitude  longitude = ${longitude}  location.city = ${location.city}"
-                )
-                Log.i("location.locType", "location.locType == " + location.locType)
                 if (location.locType == 61 || location.locType == 161) {
-                    viewModel.refresh(
-                        "$longitude,$latitude"
-                    )
-                    viewModel.stopLocation()
+                    if (!viewModel.isRefreshing.value) {//避免定位成功后多次调用
+                        viewModel.refresh(
+                            "$longitude,$latitude"
+                        )
+                    }
                 }
-
-                //获取定位精度，默认值为0.0f
-//                val radius: Float = location.getRadius()
-//                //获取经纬度坐标类型，以LocationClientOption中设置过的坐标类型为准
-//                val coorType: String = location.getCoorType()
-//                //获取定位类型、定位错误返回码，具体信息可参照类参考中BDLocation类中的说明
-//                val errorCode: Int = location.getLocType()
             } else {
                 Log.i("location", "latitude = ")
             }
