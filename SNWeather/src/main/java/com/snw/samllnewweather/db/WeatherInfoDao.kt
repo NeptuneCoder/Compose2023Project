@@ -16,7 +16,7 @@ interface WeatherInfoDao {
     suspend fun getBaseInfo(cityId: String, cityName: String): List<WeatherInfo>
 
     @Delete
-    suspend fun deleteCurrentDataById(data: WeatherInfo)
+    suspend fun deleteCurrentInfo(data: WeatherInfo)
 
     @Insert
     suspend fun insertHourInfo(info: HourInfo)
@@ -25,7 +25,7 @@ interface WeatherInfoDao {
     suspend fun getHourInfo(cityId: String, cityName: String): List<HourInfo>
 
     @Delete
-    suspend fun deleteHourDataById(hourInfo: HourInfo)
+    suspend fun deleteHourInfo(hourInfo: HourInfo)
 
     @Insert
     suspend fun insertDayInfo(info: DayInfo)
@@ -34,7 +34,7 @@ interface WeatherInfoDao {
     suspend fun getDayInfo(cityId: String, cityName: String): List<DayInfo>
 
     @Delete
-    suspend fun deleteDayDataById(dayInfo: DayInfo)
+    suspend fun deleteDayInfo(dayInfo: DayInfo)
 
 
     @Insert
@@ -53,6 +53,6 @@ interface WeatherInfoDao {
     suspend fun getLocationInfo(): Location
 
     @Delete
-    suspend fun deleteLocationDataById(location: Location)
+    suspend fun deleteLocationInfo(location: Location)
 
 }

@@ -10,8 +10,6 @@ import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.snw.samllnewweather.db.WeatherInfoDao
 import com.snw.samllnewweather.ext.*
-import com.snw.samllnewweather.model.DayInfo
-import com.snw.samllnewweather.model.HourInfo
 import com.snw.samllnewweather.net.AddressInfoService
 import com.snw.samllnewweather.net.WeatherInfoService
 import com.snw.samllnewweather.screen.WeatherInfo
@@ -23,7 +21,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.*
 import javax.inject.Inject
 
 
@@ -88,7 +85,7 @@ class MainViewModel @Inject constructor(
                     }
                 } else {
                     //否则查询新地址
-                    dao.deleteLocationDataById(locationInfo)
+                    dao.deleteLocationInfo(locationInfo)
                     val weatherInfo = weatherInfoList.findLastNewInfo()
                     if (System.currentTimeMillis() - weatherInfo.timestamp < 5 * 1000 * 60) {
                         //TODO 直接查询当前天气
@@ -204,7 +201,7 @@ class MainViewModel @Inject constructor(
             val findLastMinTime = hourInfoList.findLastMinHour()
 
             if (findLastMinTime.toHourDateLong() <= getCurrentHourTime()) {
-                dao.deleteHourDataById(findLastMinTime)
+                dao.deleteHourInfo(findLastMinTime)
                 loadHourDataByNet(weatherInfo)
             } else {
                 weatherInfo.futureHours = hourInfoList
@@ -237,7 +234,7 @@ class MainViewModel @Inject constructor(
             val dayInfoList = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
             val findLastMinTime = dayInfoList.findLastMinDay()
             if (findLastMinTime.toDayDateLong() < getCurrentDayTime()) {
-                dao.deleteDayDataById(findLastMinTime)
+                dao.deleteDayInfo(findLastMinTime)
                 loadDayDataByNet(weatherInfo)
             } else {
                 weatherInfo.futureDays = dayInfoList
