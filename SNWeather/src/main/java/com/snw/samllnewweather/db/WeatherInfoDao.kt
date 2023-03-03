@@ -21,14 +21,24 @@ interface WeatherInfoDao {
     @Insert
     suspend fun insertHourInfo(info: HourInfo)
 
+    @Insert
+    suspend fun insertHourInfoList(vararg info: HourInfo)
+
+
     @Query("SELECT * FROM hour_info_table WHERE cityId = (:cityId) AND cityName = (:cityName)")
     suspend fun getHourInfo(cityId: String, cityName: String): List<HourInfo>
 
     @Delete
     suspend fun deleteHourInfo(hourInfo: HourInfo)
 
+    @Query("DELETE FROM hour_info_table")
+    suspend fun deleteAllHour()
+
     @Insert
     suspend fun insertDayInfo(info: DayInfo)
+
+    @Insert
+    suspend fun insertDayInfoList(vararg info: DayInfo)
 
     @Query("SELECT * FROM day_info_table WHERE cityId = (:cityId) AND cityName = (:cityName)")
     suspend fun getDayInfo(cityId: String, cityName: String): List<DayInfo>
@@ -36,6 +46,8 @@ interface WeatherInfoDao {
     @Delete
     suspend fun deleteDayInfo(dayInfo: DayInfo)
 
+    @Query("DELETE FROM day_info_table")
+    suspend fun deleteAllDay()
 
     @Insert
     suspend fun insertLocationInfo(info: Location)

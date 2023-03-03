@@ -19,10 +19,7 @@ import com.example.flowdemo.ui.theme.Compose2023ProjectTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
@@ -64,11 +61,72 @@ class MainActivity : ComponentActivity() {
                         SharedFlowMultiCollectButton {
                             SharedFlowMultiCollect()
                         }
+                        ZipButton {
+                            zip()
+                        }
+                        CombineButton {
+                            combine()
+                        }
                     }
                 }
             }
         }
     }
+
+    fun zip() {
+        val flow1 = flow<Int> {
+            (1..4).forEach {
+                emit(it)
+//                if (it == 2) {
+//                    throw Exception("custom error")
+//                }
+            }
+
+        }
+
+        val flow2 = flow<Int> {
+            (1..8).forEach { emit(it) }
+        }
+
+        GlobalScope.launch {
+            flow1.zip(flow2, { v1, v2 ->
+
+                v1 + v2
+            }).catch {
+                Log.i("zip", "error == " + it)
+            }.collect {
+                Log.i("zip", "collect == " + it)
+            }
+        }
+    }
+
+    fun combine() {
+        val flow1 = flow<Int> {
+            (1..4).forEach {
+                emit(it)
+//                if (it == 2) {
+//                    throw Exception("custom error")
+//                }
+            }
+
+        }
+
+        val flow2 = flow<Int> {
+            (1..8).forEach { emit(it) }
+        }
+
+        GlobalScope.launch {
+            flow1.combine(flow2, { v1, v2 ->
+
+                v1 + v2
+            }).catch {
+                Log.i("combine", "error == " + it)
+            }.collect {
+                Log.i("combine", "collect == " + it)
+            }
+        }
+    }
+
 
     /**在冷流时，多个收集器都会收到数据。先一个收集器接收安后，另一个才会继续📱。
     I/collect: collect 1 value = 1
@@ -147,6 +205,32 @@ fun ColdFlowMultiCollectButton(click: () -> Unit) {
             .wrapContentWidth()
     ) {
         Text(text = "测试冷流多个收集器测试")
+    }
+}
+
+
+@Composable
+fun CombineButton(click: () -> Unit) {
+    Button(
+        onClick = click,
+        Modifier
+            .wrapContentHeight()
+            .wrapContentWidth()
+    ) {
+        Text(text = "Combine")
+    }
+}
+
+
+@Composable
+fun ZipButton(click: () -> Unit) {
+    Button(
+        onClick = click,
+        Modifier
+            .wrapContentHeight()
+            .wrapContentWidth()
+    ) {
+        Text(text = "Zip")
     }
 }
 

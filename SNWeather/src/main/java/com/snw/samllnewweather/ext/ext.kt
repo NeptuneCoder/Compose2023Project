@@ -5,6 +5,10 @@ import android.util.Log
 import com.snw.samllnewweather.model.DayInfo
 import com.snw.samllnewweather.model.HourInfo
 import com.snw.samllnewweather.screen.WeatherInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.util.*
 
 fun <T> List<T>.formatResourceId(context: Context) {
@@ -116,11 +120,15 @@ fun List<WeatherInfo>.findLastNewInfo(): WeatherInfo {
         this.first()
     } else {
         this.reduce { a: WeatherInfo, b: WeatherInfo ->
-            if (a.timestamp < b.timestamp) {
+            if (a.timestamp > b.timestamp) {
                 a
             } else {
                 b
             }
         }
     }
+}
+
+public fun <T> Flow<T>.launchIn(scope: CoroutineScope): Job = scope.launch {
+    collect {} // tail-call
 }

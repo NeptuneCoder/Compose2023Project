@@ -21,6 +21,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.Arrays
 import javax.inject.Inject
 
 
@@ -56,6 +57,7 @@ class MainViewModel @Inject constructor(
         if (loc.isEmpty()) {
             return
         }
+
         viewModelScope.launch {
             _showPlaceholder.emit(true)
             _isRefresing.emit(true)
@@ -63,14 +65,13 @@ class MainViewModel @Inject constructor(
         stopLocation()
         viewModelScope.launch {
 
-            val address = dao.getLocationInfo()
+            val locationInfo = dao.getLocationInfo()
 
-            if (address == null) {
+            if (locationInfo == null) {
                 //TODO 第一次加载数据
                 initLoadData(location)
             } else {
-                val weatherInfoList = dao.getBaseInfo(address.id, address.name)
-                val locationInfo = dao.getLocationInfo()
+                val weatherInfoList = dao.getBaseInfo(locationInfo.id, locationInfo.name)
                 if (locationInfo.lessThan20Min()) {
                     //直接使用查询到的地址
                     //否则查询新地址
@@ -201,7 +202,7 @@ class MainViewModel @Inject constructor(
             val findLastMinTime = hourInfoList.findLastMinHour()
 
             if (findLastMinTime.toHourDateLong() <= getCurrentHourTime()) {
-                dao.deleteHourInfo(findLastMinTime)
+                dao.deleteAllHour()
                 loadHourDataByNet(weatherInfo)
             } else {
                 weatherInfo.futureHours = hourInfoList
@@ -213,12 +214,14 @@ class MainViewModel @Inject constructor(
     private fun loadHourDataByNet(weatherInfo: WeatherInfo) {
         viewModelScope.launch {
             weatherApi.getHourInfo(loc).flowOn(Dispatchers.IO).collect {
+                dao.deleteAllHour()
                 //TODO 更新本地数据，拿到时间最大的插入到本地
-                val data = it.hourly.findLastMaxHour()
-                data.cityId = weatherInfo.cityId
-                data.cityName = weatherInfo.cityName
-                data.formatResourceId(context)
-                dao.insertHourInfo(data)
+                it.hourly.forEach { hourInfo ->
+                    hourInfo.cityId = weatherInfo.cityId
+                    hourInfo.cityName = weatherInfo.cityName
+                    hourInfo.formatResourceId(context)
+                }
+                dao.insertHourInfoList(*it.hourly.toTypedArray())
                 weatherInfo.futureHours = dao.getHourInfo(weatherInfo.cityId, weatherInfo.cityName)
                 loadDayDataByLocal(weatherInfo)
             }
@@ -234,7 +237,7 @@ class MainViewModel @Inject constructor(
             val dayInfoList = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
             val findLastMinTime = dayInfoList.findLastMinDay()
             if (findLastMinTime.toDayDateLong() < getCurrentDayTime()) {
-                dao.deleteDayInfo(findLastMinTime)
+                dao.deleteAllDay()
                 loadDayDataByNet(weatherInfo)
             } else {
                 weatherInfo.futureDays = dayInfoList
@@ -246,14 +249,18 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 超过了1天以上
+     */
     private fun loadDayDataByNet(weatherInfo: WeatherInfo) {
         viewModelScope.launch {
             weatherApi.getDayInfo(loc).flowOn(Dispatchers.IO).collect {
-                val dayInfo = it.daily.findLastMaxDay()
-                dayInfo.cityId = weatherInfo.cityId
-                dayInfo.cityName = weatherInfo.cityName
-                dayInfo.formatResourceId(context)
-                dao.insertDayInfo(dayInfo)
+                it.daily.forEach { dayInfo ->
+                    dayInfo.cityId = weatherInfo.cityId
+                    dayInfo.cityName = weatherInfo.cityName
+                    dayInfo.formatResourceId(context)
+                }
+                dao.insertDayInfoList(*it.daily.toTypedArray())
                 weatherInfo.futureDays = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
                 _weatherData.emit(weatherInfo)
                 _showPlaceholder.emit(false)
@@ -319,14 +326,17 @@ class MainViewModel @Inject constructor(
                         it.formatResourceId(context)
                         it.cityId = weather.cityId
                         it.cityName = weather.cityName
-                        dao.insertHourInfo(it)
+
                     }
+                    dao.insertHourInfoList(*weather.futureHours.toTypedArray())
                     weather.futureDays.forEach {
                         it.cityId = weather.cityId
                         it.cityName = weather.cityName
                         it.formatResourceId(context)
-                        dao.insertDayInfo(it)
+
                     }
+
+                    dao.insertDayInfoList(*weather.futureDays.toTypedArray())
                     weather
                 }.flowOn(Dispatchers.IO)
                 .catch {
