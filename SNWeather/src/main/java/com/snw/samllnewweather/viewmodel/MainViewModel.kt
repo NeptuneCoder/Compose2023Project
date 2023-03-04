@@ -97,7 +97,6 @@ class MainViewModel @Inject constructor(
                         loadCurrentDataByNet(weatherInfo, loc)
                     }
                 }
-
             }
         }
     }
@@ -143,51 +142,54 @@ class MainViewModel @Inject constructor(
         }
     }
 
+
+    fun getLocationAndRealInfo(location: String, oldInfo: WeatherInfo): Flow<WeatherInfo> {
+        return addressApi.getAddressInfo(location).map { source0 ->
+            val result = WeatherInfo()
+            result.tempMax = oldInfo.tempMax
+            result.tempMin = oldInfo.tempMin
+            result.riseTime = oldInfo.riseTime
+            result.downTime = oldInfo.downTime
+            result.airState = oldInfo.airState
+            result.airAqi = oldInfo.airAqi
+
+            val locationInfo = source0.location[0]
+            dao.insertLocationInfo(locationInfo)
+            result.cityId = locationInfo.id
+            result.cityName = locationInfo.name
+            result.address = locationInfo.name
+            result.locationGps = location
+            result
+        }.zip(weatherApi.getRealTimeInfo(location)) { result, source1 ->
+
+            with(source1.now) {
+                result.publishTime = source1.updateTime.formatTime()
+                result.temp = temp.formatTemp()
+
+                result.icon = context.applicationContext.resources.getIdentifier(
+                    "icon_" + icon,
+                    "drawable",
+                    context.applicationContext.packageName
+                )
+                result.feelTemp = feelsLike
+                result.text = text
+                result.windDirect = windDir
+                result.windLevel = windScale
+            }
+
+            result
+        }
+    }
+
     /**
      * 查询实时的天气
      */
     private fun loadCurrentDataByNet(oldInfo: WeatherInfo, location: String) {
         viewModelScope.launch {
-            addressApi.getAddressInfo(location)
-                .zip(weatherApi.getRealTimeInfo(location)) { source0, source1 ->
-
-                    val result = WeatherInfo()
-                    result.tempMax = oldInfo.tempMax
-                    result.tempMin = oldInfo.tempMin
-                    result.riseTime = oldInfo.riseTime
-                    result.downTime = oldInfo.downTime
-                    result.airState = oldInfo.airState
-                    result.airAqi = oldInfo.airAqi
-
-                    val locationInfo = source0.location[0]
-                    dao.insertLocationInfo(locationInfo)
-                    result.cityId = locationInfo.id
-                    result.cityName = locationInfo.name
-                    result.address = locationInfo.name
-
-                    result.locationGps = location
-
-                    with(source1.now) {
-                        result.publishTime = source1.updateTime.formatTime()
-                        result.temp = temp.formatTemp()
-
-                        result.icon = context.applicationContext.resources.getIdentifier(
-                            "icon_" + icon,
-                            "drawable",
-                            context.applicationContext.packageName
-                        )
-                        result.feelTemp = feelsLike
-                        result.text = text
-                        result.windDirect = windDir
-                        result.windLevel = windScale
-                    }
-
-                    result
-                }.flowOn(Dispatchers.IO).collect {
-                    dao.insertBaseInfo(it)
-
-                    loadHourDataByLocal(it)
-                }
+            getLocationAndRealInfo(location, oldInfo).flowOn(Dispatchers.IO).collect {
+                dao.insertBaseInfo(it)
+                loadHourDataByLocal(it)
+            }
         }
     }
 
@@ -202,7 +204,7 @@ class MainViewModel @Inject constructor(
             val findLastMinTime = hourInfoList.findLastMinHour()
 
             if (findLastMinTime.toHourDateLong() <= getCurrentHourTime()) {
-                dao.deleteAllHour()
+                dao.deleteAllHour(weatherInfo.cityId, weatherInfo.cityName)
                 loadHourDataByNet(weatherInfo)
             } else {
                 weatherInfo.futureHours = hourInfoList
@@ -214,7 +216,7 @@ class MainViewModel @Inject constructor(
     private fun loadHourDataByNet(weatherInfo: WeatherInfo) {
         viewModelScope.launch {
             weatherApi.getHourInfo(loc).flowOn(Dispatchers.IO).collect {
-                dao.deleteAllHour()
+                dao.deleteAllHour(weatherInfo.cityId, weatherInfo.cityName)
                 //TODO 更新本地数据，拿到时间最大的插入到本地
                 it.hourly.forEach { hourInfo ->
                     hourInfo.cityId = weatherInfo.cityId
@@ -237,7 +239,7 @@ class MainViewModel @Inject constructor(
             val dayInfoList = dao.getDayInfo(weatherInfo.cityId, weatherInfo.cityName)
             val findLastMinTime = dayInfoList.findLastMinDay()
             if (findLastMinTime.toDayDateLong() < getCurrentDayTime()) {
-                dao.deleteAllDay()
+                dao.deleteAllDay(weatherInfo.cityId, weatherInfo.cityName)
                 loadDayDataByNet(weatherInfo)
             } else {
                 weatherInfo.futureDays = dayInfoList
@@ -421,7 +423,7 @@ class MainViewModel @Inject constructor(
                 val longitude: Double = location.getLongitude()
                 if (location.locType == 61 || location.locType == 161) {
                     Log.i("mLocationClient", "定位调用回调成功")
-                    if (!viewModel.isRefreshing.value) {//避免定位成功后多次调用
+                    if (!viewModel.isRefreshing.value && "$longitude,$latitude".isNotEmpty()) {//避免定位成功后多次调用
                         viewModel.refresh(
                             "$longitude,$latitude"
                         )

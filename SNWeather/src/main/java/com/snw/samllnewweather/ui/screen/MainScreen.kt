@@ -365,7 +365,8 @@ fun Future24Info() {
                 val data = data.get(it)
                 Column(
                     Modifier
-                        .padding(end = 10.dp)
+                        .padding(end = 10.dp), horizontalAlignment = Alignment.CenterHorizontally
+
                 ) {
                     Text(
                         text = data.fxTime.formatTime(SimpleDateFormat("HH")) + " 时",

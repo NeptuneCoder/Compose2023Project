@@ -18,3 +18,5 @@ include ':Chapter2'
 include ':SNWeather'
 include ':officialtutorial'
 include ':flowdemo'
+
+include ':ffmpegdemo'

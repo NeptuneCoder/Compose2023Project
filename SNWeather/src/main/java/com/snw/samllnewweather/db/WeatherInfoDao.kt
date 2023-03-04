@@ -31,8 +31,8 @@ interface WeatherInfoDao {
     @Delete
     suspend fun deleteHourInfo(hourInfo: HourInfo)
 
-    @Query("DELETE FROM hour_info_table")
-    suspend fun deleteAllHour()
+    @Query("DELETE FROM hour_info_table WHERE cityId = (:cityId) AND cityName = (:cityName)")
+    suspend fun deleteAllHour(cityId: String, cityName: String)
 
     @Insert
     suspend fun insertDayInfo(info: DayInfo)
@@ -46,8 +46,8 @@ interface WeatherInfoDao {
     @Delete
     suspend fun deleteDayInfo(dayInfo: DayInfo)
 
-    @Query("DELETE FROM day_info_table")
-    suspend fun deleteAllDay()
+    @Query("DELETE FROM day_info_table WHERE cityId = (:cityId) AND cityName = (:cityName)")
+    suspend fun deleteAllDay(cityId: String, cityName: String)
 
     @Insert
     suspend fun insertLocationInfo(info: Location)

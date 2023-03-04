@@ -128,7 +128,3 @@ fun List<WeatherInfo>.findLastNewInfo(): WeatherInfo {
         }
     }
 }
-
-public fun <T> Flow<T>.launchIn(scope: CoroutineScope): Job = scope.launch {
-    collect {} // tail-call
-}

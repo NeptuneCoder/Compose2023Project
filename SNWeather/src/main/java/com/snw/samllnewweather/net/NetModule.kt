@@ -16,6 +16,7 @@ import java.net.Proxy
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
+import  retrofit2.Retrofit.Builder
 
 
 @Module
@@ -99,16 +100,24 @@ object NetModule {
 
     @Singleton
     @Provides
-    @Named("weatherUrl")
-    fun provideWeatherRetrofit(
+    fun providerRetrofitBuilder(
         okHttpClient: OkHttpClient,
-        gsonConverterFactory: Converter.Factory,
-    ): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(WEATHER_BASE_URL)
-            .client(okHttpClient)
+        gsonConverterFactory: Converter.Factory
+    ): Builder {
+        val baseRetrofit = Retrofit.Builder().client(okHttpClient)
             .addConverterFactory(gsonConverterFactory)
             .addCallAdapterFactory(FlowCallAdapterFactory.create())
+        return baseRetrofit
+
+    }
+
+    @Singleton
+    @Provides
+    @Named("weatherUrl")
+    fun provideWeatherRetrofit(
+        baseRetrofit: Retrofit.Builder
+    ): Retrofit {
+        return baseRetrofit.baseUrl(WEATHER_BASE_URL)
             .build()
     }
 
@@ -116,15 +125,9 @@ object NetModule {
     @Provides
     @Named("addressUrl")
     fun provideAddressRetrofit(
-        okHttpClient: OkHttpClient,
-        gsonConverterFactory: Converter.Factory,
+        baseRetrofit: Retrofit.Builder
     ): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(ADDRESS_BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(gsonConverterFactory)
-            .addCallAdapterFactory(FlowCallAdapterFactory.create())
-            .build()
+        return baseRetrofit.baseUrl(ADDRESS_BASE_URL).build()
     }
 
     @Singleton
