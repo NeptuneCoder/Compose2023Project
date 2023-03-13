@@ -33,12 +33,12 @@ object NetModule {
         //日志显示级别
         val level: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BODY
         //打印请求和返回参数
-        val loggingInterceptor = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-            override fun log(message: String) {
-                Log.d("zcb", "OkHttp====Message:$message")
-            }
-
-        })
+        val loggingInterceptor = HttpLoggingInterceptor { message ->
+            Log.d(
+                "zcb",
+                "OkHttp====Message:$message"
+            )
+        }
         loggingInterceptor.setLevel(level)
         //定制OkHttp
         return loggingInterceptor

@@ -2,6 +2,7 @@ package com.snw.samllnewweather
 
 import android.app.Application
 import com.baidu.location.LocationClient
+
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp

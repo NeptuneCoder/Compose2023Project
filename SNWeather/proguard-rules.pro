@@ -68,3 +68,6 @@ LocalVariable*Table,*Annotation*,Synthetic,EnclosingMethod
 -keep interface com.google.android.support.v4.app.** { *; }
 -keep public class * extends com.google.android.support.v4.**
 -keep public class * extends com.google.android.support.v4.app.Fragment
+#bugly
+-dontwarn com.tencent.bugly.**
+-keep public class com.tencent.bugly.**{*;}

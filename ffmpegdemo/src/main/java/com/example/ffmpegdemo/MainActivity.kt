@@ -1,54 +1,57 @@
 package com.example.ffmpegdemo
 
 import android.os.Bundle
+import android.view.SurfaceView
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.ffmpegdemo.ui.theme.Compose2023ProjectTheme
 
 class MainActivity : ComponentActivity() {
-    // Used to load the 'demox' library on application startup.
-
-    companion object {
-        init {
-            System.loadLibrary("nativeLib");
-        }
-    }
-
+    val dnPlayer by lazy { DNPlayer() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            Compose2023ProjectTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Greeting(stringFromJNI())
+        setContentView(R.layout.activity_main)
+        val surfaceView = findViewById<SurfaceView>(R.id.surface_view)
+        val onStartBtn = findViewById<Button>(R.id.on_start)
+        val onStopBtn = findViewById<Button>(R.id.on_stop)
+        dnPlayer.setDataSource("rtmp://ns8.indexforce.com/home/mystream") //rtmp://live.hkstv.hk.lxdns.com/live/hks")
+        dnPlayer.setSurfaceView(surfaceView)
+        dnPlayer.setOnPrepaseListener(object : DNPlayer.OnPreparsListener {
+            override fun onPrepase() {
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "准备妥当：", Toast.LENGTH_LONG)
+                        .show()
+                }
+                dnPlayer.start()
+
+            }
+
+        })
+        dnPlayer.setOnErrorListener(object : DNPlayer.OnErrorListener {
+            override fun onError(code: Int) {
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, "错误码：" + code, Toast.LENGTH_LONG)
+                        .show()
                 }
             }
+
+        })
+        onStartBtn.setOnClickListener {
+            dnPlayer.prepare()
         }
     }
-    external fun stringFromJNI(): String
 }
 
-
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    Compose2023ProjectTheme {
-        Greeting("Android")
-    }
-}

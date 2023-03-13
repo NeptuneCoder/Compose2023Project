@@ -28,6 +28,9 @@ interface WeatherInfoDao {
     @Query("SELECT * FROM hour_info_table WHERE cityId = (:cityId) AND cityName = (:cityName)")
     suspend fun getHourInfo(cityId: String, cityName: String): List<HourInfo>
 
+    @Query("SELECT * FROM hour_info_table WHERE cityId = (:cityId) AND cityName = (:cityName) AND fxTime =(SELECT MAX(fxTime) FROM hour_info_table) LIMIT 1 ")
+    suspend fun getRecentHourInfo(cityId: String, cityName: String): HourInfo
+
     @Delete
     suspend fun deleteHourInfo(hourInfo: HourInfo)
 
