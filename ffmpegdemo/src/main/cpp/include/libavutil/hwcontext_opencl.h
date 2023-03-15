@@ -34,7 +34,7 @@
  * Pools allocated internally are always dynamic, and are primarily intended
  * to be used in OpenCL-only cases.  If interoperation is required, it is
  * typically required to allocate frames in the other API and then map the
- * frames context to OpenCL with av_hwframe_ctx_create_derived().
+ * frames codecContext to OpenCL with av_hwframe_ctx_create_derived().
  */
 
 /**
@@ -63,12 +63,12 @@ typedef struct AVOpenCLFrameDescriptor {
 typedef struct AVOpenCLDeviceContext {
     /**
      * The primary device ID of the device.  If multiple OpenCL devices
-     * are associated with the context then this is the one which will
+     * are associated with the codecContext then this is the one which will
      * be used for all operations internal to FFmpeg.
      */
     cl_device_id device_id;
     /**
-     * The OpenCL context which will contain all operations and frames on
+     * The OpenCL codecContext which will contain all operations and frames on
      * this device.
      */
     cl_context context;

@@ -30,8 +30,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "version.h"
-
 /**
  * @defgroup lavu_murmur3 Murmur3
  * @ingroup lavu_hash
@@ -62,16 +60,16 @@
  */
 
 /**
- * Allocate an AVMurMur3 hash context.
+ * Allocate an AVMurMur3 hash codecContext.
  *
- * @return Uninitialized hash context or `NULL` in case of error
+ * @return Uninitialized hash codecContext or `NULL` in case of error
  */
 struct AVMurMur3 *av_murmur3_alloc(void);
 
 /**
- * Initialize or reinitialize an AVMurMur3 hash context with a seed.
+ * Initialize or reinitialize an AVMurMur3 hash codecContext with a seed.
  *
- * @param[out] c    Hash context
+ * @param[out] c    Hash codecContext
  * @param[in]  seed Random seed
  *
  * @see av_murmur3_init()
@@ -81,11 +79,11 @@ struct AVMurMur3 *av_murmur3_alloc(void);
 void av_murmur3_init_seeded(struct AVMurMur3 *c, uint64_t seed);
 
 /**
- * Initialize or reinitialize an AVMurMur3 hash context.
+ * Initialize or reinitialize an AVMurMur3 hash codecContext.
  *
  * Equivalent to av_murmur3_init_seeded() with a built-in seed.
  *
- * @param[out] c    Hash context
+ * @param[out] c    Hash codecContext
  *
  * @see av_murmur3_init_seeded()
  * @see @ref lavu_murmur3_seedinfo "Detailed description" on a discussion of
@@ -94,22 +92,18 @@ void av_murmur3_init_seeded(struct AVMurMur3 *c, uint64_t seed);
 void av_murmur3_init(struct AVMurMur3 *c);
 
 /**
- * Update hash context with new data.
+ * Update hash codecContext with new data.
  *
- * @param[out] c    Hash context
+ * @param[out] c    Hash codecContext
  * @param[in]  src  Input data to update hash with
  * @param[in]  len  Number of bytes to read from `src`
  */
-#if FF_API_CRYPTO_SIZE_T
-void av_murmur3_update(struct AVMurMur3 *c, const uint8_t *src, int len);
-#else
 void av_murmur3_update(struct AVMurMur3 *c, const uint8_t *src, size_t len);
-#endif
 
 /**
  * Finish hashing and output digest value.
  *
- * @param[in,out] c    Hash context
+ * @param[in,out] c    Hash codecContext
  * @param[out]    dst  Buffer where output digest value is stored
  */
 void av_murmur3_final(struct AVMurMur3 *c, uint8_t dst[16]);

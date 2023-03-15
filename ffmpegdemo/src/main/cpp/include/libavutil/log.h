@@ -22,7 +22,6 @@
 #define AVUTIL_LOG_H
 
 #include <stdarg.h>
-#include "avutil.h"
 #include "attributes.h"
 #include "version.h"
 
@@ -60,19 +59,19 @@ typedef enum {
 struct AVOptionRanges;
 
 /**
- * Describe the class of an AVClass context structure. That is an
+ * Describe the class of an AVClass codecContext structure. That is an
  * arbitrary struct of which the first field is a pointer to an
  * AVClass struct (e.g. AVCodecContext, AVFormatContext etc.).
  */
 typedef struct AVClass {
     /**
      * The name of the class; usually it is the same name as the
-     * context structure type to which the AVClass is associated.
+     * codecContext structure type to which the AVClass is associated.
      */
     const char* class_name;
 
     /**
-     * A pointer to a function which returns the name of a context
+     * A pointer to a function which returns the name of a codecContext
      * instance ctx associated with the class.
      */
     const char* (*item_name)(void* ctx);
@@ -99,31 +98,13 @@ typedef struct AVClass {
     int log_level_offset_offset;
 
     /**
-     * Offset in the structure where a pointer to the parent context for
+     * Offset in the structure where a pointer to the parent codecContext for
      * logging is stored. For example a decoder could pass its AVCodecContext
-     * to eval as such a parent context, which an av_log() implementation
-     * could then leverage to display the parent context.
+     * to eval as such a parent codecContext, which an av_log() implementation
+     * could then leverage to display the parent codecContext.
      * The offset can be NULL.
      */
     int parent_log_context_offset;
-
-    /**
-     * Return next AVOptions-enabled child or NULL
-     */
-    void* (*child_next)(void *obj, void *prev);
-
-#if FF_API_CHILD_CLASS_NEXT
-    /**
-     * Return an AVClass corresponding to the next potential
-     * AVOptions-enabled child.
-     *
-     * The difference between child_next and this is that
-     * child_next iterates over _already existing_ objects, while
-     * child_class_next iterates over _all possible_ children.
-     */
-    attribute_deprecated
-    const struct AVClass* (*child_class_next)(const struct AVClass *prev);
-#endif
 
     /**
      * Category used for visualization (like color)
@@ -143,6 +124,11 @@ typedef struct AVClass {
      * available since version (52.12)
      */
     int (*query_ranges)(struct AVOptionRanges **, void *obj, const char *key, int flags);
+
+    /**
+     * Return next AVOptions-enabled child or NULL
+     */
+    void* (*child_next)(void *obj, void *prev);
 
     /**
      * Iterate over the AVClasses corresponding to potential AVOptions-enabled
@@ -337,9 +323,9 @@ void av_log_default_callback(void *avcl, int level, const char *fmt,
                              va_list vl);
 
 /**
- * Return the context name
+ * Return the codecContext name
  *
- * @param  ctx The AVClass context
+ * @param  ctx The AVClass codecContext
  *
  * @return The AVClass class_name
  */

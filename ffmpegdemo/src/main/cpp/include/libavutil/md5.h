@@ -31,7 +31,6 @@
 #include <stdint.h>
 
 #include "attributes.h"
-#include "version.h"
 
 /**
  * @defgroup lavu_md5 MD5
@@ -46,34 +45,30 @@ extern const int av_md5_size;
 struct AVMD5;
 
 /**
- * Allocate an AVMD5 context.
+ * Allocate an AVMD5 codecContext.
  */
 struct AVMD5 *av_md5_alloc(void);
 
 /**
  * Initialize MD5 hashing.
  *
- * @param ctx pointer to the function context (of size av_md5_size)
+ * @param ctx pointer to the function codecContext (of size av_md5_size)
  */
 void av_md5_init(struct AVMD5 *ctx);
 
 /**
  * Update hash value.
  *
- * @param ctx hash function context
+ * @param ctx hash function codecContext
  * @param src input data to update hash with
  * @param len input data length
  */
-#if FF_API_CRYPTO_SIZE_T
-void av_md5_update(struct AVMD5 *ctx, const uint8_t *src, int len);
-#else
 void av_md5_update(struct AVMD5 *ctx, const uint8_t *src, size_t len);
-#endif
 
 /**
  * Finish hashing and output digest value.
  *
- * @param ctx hash function context
+ * @param ctx hash function codecContext
  * @param dst buffer where output digest value is stored
  */
 void av_md5_final(struct AVMD5 *ctx, uint8_t *dst);
@@ -85,11 +80,7 @@ void av_md5_final(struct AVMD5 *ctx, uint8_t *dst);
  * @param src The data to hash
  * @param len The length of the data, in bytes
  */
-#if FF_API_CRYPTO_SIZE_T
-void av_md5_sum(uint8_t *dst, const uint8_t *src, const int len);
-#else
 void av_md5_sum(uint8_t *dst, const uint8_t *src, size_t len);
-#endif
 
 /**
  * @}

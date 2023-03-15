@@ -2,8 +2,6 @@
 // Created by yanghai on 2023/3/9.
 //
 
-
-
 #ifndef COMPOSE2023PROJECT_JAVACALLHELPER_H
 #define COMPOSE2023PROJECT_JAVACALLHELPER_H
 

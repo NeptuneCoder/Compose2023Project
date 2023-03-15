@@ -1,5 +1,6 @@
 package com.example.ffmpegdemo
 
+import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 
@@ -84,7 +85,7 @@ class DNPlayer : SurfaceHolder.Callback {
      * 2. 按home都会回调该函数
      */
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-
+        native_setSurface(holder.surface)
     }
 
     /**
@@ -106,5 +107,6 @@ class DNPlayer : SurfaceHolder.Callback {
 
     external fun native_prepare(dataSource: String)
     external fun native_start()
+    external fun native_setSurface(surface: Surface)
 }
 

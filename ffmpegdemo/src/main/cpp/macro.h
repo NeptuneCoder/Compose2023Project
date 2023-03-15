@@ -34,6 +34,8 @@
 //没有音视频
 #define FFMPEG_NOMEDIA 8
 
+#define FFMPEG_CODECPAR 9
+
 
 
 #endif //DNPLAYER_MACRO_H

@@ -24,7 +24,6 @@
 #include <stdint.h>
 
 #include "attributes.h"
-#include "version.h"
 
 /**
  * @defgroup lavu_aes AES
@@ -37,22 +36,27 @@ extern const int av_aes_size;
 struct AVAES;
 
 /**
- * Allocate an AVAES context.
+ * Allocate an AVAES codecContext.
  */
 struct AVAES *av_aes_alloc(void);
 
 /**
- * Initialize an AVAES context.
+ * Initialize an AVAES codecContext.
+ *
+ * @param a The AVAES codecContext
+ * @param key Pointer to the key
  * @param key_bits 128, 192 or 256
  * @param decrypt 0 for encryption, 1 for decryption
  */
 int av_aes_init(struct AVAES *a, const uint8_t *key, int key_bits, int decrypt);
 
 /**
- * Encrypt or decrypt a buffer using a previously initialized context.
- * @param count number of 16 byte blocks
+ * Encrypt or decrypt a buffer using a previously initialized codecContext.
+ *
+ * @param a The AVAES codecContext
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
+ * @param count number of 16 byte blocks
  * @param iv initialization vector for CBC mode, if NULL then ECB will be used
  * @param decrypt 0 for encryption, 1 for decryption
  */

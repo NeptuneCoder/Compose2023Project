@@ -3,7 +3,7 @@
 //
 #include "AudioChannel.h"
 
-AudioChannel::AudioChannel(int index) : BaseChannel(index) {
+AudioChannel::AudioChannel(int index, AVCodecContext *context) : BaseChannel(index, context) {
 
 };
 

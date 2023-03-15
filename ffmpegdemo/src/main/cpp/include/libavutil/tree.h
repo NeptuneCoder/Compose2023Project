@@ -28,7 +28,6 @@
 #define AVUTIL_TREE_H
 
 #include "attributes.h"
-#include "version.h"
 
 /**
  * @addtogroup lavu_tree AVTree
@@ -60,7 +59,7 @@ struct AVTreeNode *av_tree_node_alloc(void);
  *            API identical to that of Standard C's qsort
  *            It is guaranteed that the first and only the first argument to cmp()
  *            will be the key parameter to av_tree_find(), thus it could if the
- *            user wants, be a different type (like an opaque context).
+ *            user wants, be a different type (like an opaque codecContext).
  * @return An element with cmp(key, elem) == 0 or NULL if no such element
  *         exists in the tree.
  */

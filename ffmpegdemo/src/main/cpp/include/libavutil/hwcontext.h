@@ -80,9 +80,9 @@ typedef struct AVHWDeviceContext {
 
     /**
      * The format-specific data, allocated and freed by libavutil along with
-     * this context.
+     * this codecContext.
      *
-     * Should be cast by the user to the format-specific context defined in the
+     * Should be cast by the user to the format-specific codecContext defined in the
      * corresponding header (hwcontext_*.h) and filled as described in the
      * documentation before calling av_hwdevice_ctx_init().
      *
@@ -95,7 +95,7 @@ typedef struct AVHWDeviceContext {
      * This field may be set by the caller before calling av_hwdevice_ctx_init().
      *
      * If non-NULL, this callback will be called when the last reference to
-     * this context is unreferenced, immediately before it is freed.
+     * this codecContext is unreferenced, immediately before it is freed.
      *
      * @note when other objects (e.g an AVHWFramesContext) are derived from this
      *       struct, this callback will be invoked after all such child objects
@@ -150,13 +150,13 @@ typedef struct AVHWFramesContext {
 
     /**
      * The format-specific data, allocated and freed automatically along with
-     * this context.
+     * this codecContext.
      *
-     * Should be cast by the user to the format-specific context defined in the
+     * Should be cast by the user to the format-specific codecContext defined in the
      * corresponding header (hwframe_*.h) and filled as described in the
      * documentation before calling av_hwframe_ctx_init().
      *
-     * After any frames using this context are created, the contents of this
+     * After any frames using this codecContext are created, the contents of this
      * struct should not be modified by the caller.
      */
     void *hwctx;
@@ -165,7 +165,7 @@ typedef struct AVHWFramesContext {
      * This field may be set by the caller before calling av_hwframe_ctx_init().
      *
      * If non-NULL, this callback will be called when the last reference to
-     * this context is unreferenced, immediately before it is freed.
+     * this codecContext is unreferenced, immediately before it is freed.
      */
     void (*free)(struct AVHWFramesContext *ctx);
 
@@ -249,7 +249,7 @@ const char *av_hwdevice_get_type_name(enum AVHWDeviceType type);
 /**
  * Iterate over supported device types.
  *
- * @param type AV_HWDEVICE_TYPE_NONE initially, then the previous type
+ * @param prev AV_HWDEVICE_TYPE_NONE initially, then the previous type
  *             returned by this function in subsequent iterations.
  * @return The next usable device type from enum AVHWDeviceType, or
  *         AV_HWDEVICE_TYPE_NONE if there are no more.
@@ -266,8 +266,8 @@ enum AVHWDeviceType av_hwdevice_iterate_types(enum AVHWDeviceType prev);
 AVBufferRef *av_hwdevice_ctx_alloc(enum AVHWDeviceType type);
 
 /**
- * Finalize the device context before use. This function must be called after
- * the context is filled with all the required information and before it is
+ * Finalize the device codecContext before use. This function must be called after
+ * the codecContext is filled with all the required information and before it is
  * used in any way.
  *
  * @param ref a reference to the AVHWDeviceContext
@@ -283,12 +283,12 @@ int av_hwdevice_ctx_init(AVBufferRef *ref);
  * manually and then wrap it in an AVHWDeviceContext using
  * av_hwdevice_ctx_alloc()/av_hwdevice_ctx_init().
  *
- * The returned context is already initialized and ready for use, the caller
+ * The returned codecContext is already initialized and ready for use, the caller
  * should not call av_hwdevice_ctx_init() on it. The user_opaque/free fields of
  * the created AVHWDeviceContext are set by this function and should not be
  * touched by the caller.
  *
- * @param device_ctx On success, a reference to the newly-created device context
+ * @param device_ctx On success, a reference to the newly-created device codecContext
  *                   will be written here. The reference is owned by the caller
  *                   and must be released with av_buffer_unref() when no longer
  *                   needed. On failure, NULL will be written to this pointer.
@@ -350,7 +350,7 @@ int av_hwdevice_ctx_create_derived_opts(AVBufferRef **dst_ctx,
                                         AVDictionary *options, int flags);
 
 /**
- * Allocate an AVHWFramesContext tied to a given device context.
+ * Allocate an AVHWFramesContext tied to a given device codecContext.
  *
  * @param device_ctx a reference to a AVHWDeviceContext. This function will make
  *                   a new reference for internal use, the one passed to the
@@ -361,8 +361,8 @@ int av_hwdevice_ctx_create_derived_opts(AVBufferRef **dst_ctx,
 AVBufferRef *av_hwframe_ctx_alloc(AVBufferRef *device_ctx);
 
 /**
- * Finalize the context before use. This function must be called after the
- * context is filled with all the required information and before it is attached
+ * Finalize the codecContext before use. This function must be called after the
+ * codecContext is filled with all the required information and before it is attached
  * to any frames.
  *
  * @param ref a reference to the AVHWFramesContext
@@ -428,7 +428,7 @@ enum AVHWFrameTransferDirection {
  * Get a list of possible source or target formats usable in
  * av_hwframe_transfer_data().
  *
- * @param hwframe_ctx the frame context to obtain the information for
+ * @param hwframe_ctx the frame codecContext to obtain the information for
  * @param dir the direction of the transfer
  * @param formats the pointer to the output format list will be written here.
  *                The list is terminated with AV_PIX_FMT_NONE and must be freed
@@ -546,30 +546,34 @@ enum {
  * This has a number of different possible effects, depending on the format
  * and origin of the src and dst frames.  On input, src should be a usable
  * frame with valid buffers and dst should be blank (typically as just created
- * by av_frame_alloc()).  src should have an associated hwframe context, and
- * dst may optionally have a format and associated hwframe context.
+ * by av_frame_alloc()).  src should have an associated hwframe codecContext, and
+ * dst may optionally have a format and associated hwframe codecContext.
  *
- * If src was created by mapping a frame from the hwframe context of dst,
+ * If src was created by mapping a frame from the hwframe codecContext of dst,
  * then this function undoes the mapping - dst is replaced by a reference to
  * the frame that src was originally mapped from.
  *
- * If both src and dst have an associated hwframe context, then this function
- * attempts to map the src frame from its hardware context to that of dst and
+ * If both src and dst have an associated hwframe codecContext, then this function
+ * attempts to map the src frame from its hardware codecContext to that of dst and
  * then fill dst with appropriate data to be usable there.  This will only be
  * possible if the hwframe contexts and associated devices are compatible -
  * given compatible devices, av_hwframe_ctx_create_derived() can be used to
- * create a hwframe context for dst in which mapping should be possible.
+ * create a hwframe codecContext for dst in which mapping should be possible.
  *
- * If src has a hwframe context but dst does not, then the src frame is
+ * If src has a hwframe codecContext but dst does not, then the src frame is
  * mapped to normal memory and should thereafter be usable as a normal frame.
  * If the format is set on dst, then the mapping will attempt to create dst
  * with that format and fail if it is not possible.  If format is unset (is
  * AV_PIX_FMT_NONE) then dst will be mapped with whatever the most appropriate
- * format to use is (probably the sw_format of the src hwframe context).
+ * format to use is (probably the sw_format of the src hwframe codecContext).
  *
  * A return value of AVERROR(ENOSYS) indicates that the mapping is not
  * possible with the given arguments and hwframe setup, while other return
  * values indicate that it failed somehow.
+ *
+ * On failure, the destination frame will be left blank, except for the
+ * hw_frames_ctx/format fields thay may have been set by the caller - those will
+ * be preserved as they were.
  *
  * @param dst Destination frame, to contain the mapping.
  * @param src Source frame, to be mapped.
@@ -587,10 +591,11 @@ int av_hwframe_map(AVFrame *dst, const AVFrame *src, int flags);
  *
  * @param derived_frame_ctx  On success, a reference to the newly created
  *                           AVHWFramesContext.
+ * @param format             The AVPixelFormat for the derived codecContext.
  * @param derived_device_ctx A reference to the device to create the new
  *                           AVHWFramesContext on.
  * @param source_frame_ctx   A reference to an existing AVHWFramesContext
- *                           which will be mapped to the derived context.
+ *                           which will be mapped to the derived codecContext.
  * @param flags  Some combination of AV_HWFRAME_MAP_* flags, defining the
  *               mapping parameters to apply to frames which are allocated
  *               in the derived device.

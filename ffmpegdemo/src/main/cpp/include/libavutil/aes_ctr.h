@@ -22,10 +22,15 @@
 #ifndef AVUTIL_AES_CTR_H
 #define AVUTIL_AES_CTR_H
 
+/**
+ * @defgroup lavu_aes_ctr AES-CTR
+ * @ingroup lavu_crypto
+ * @{
+ */
+
 #include <stdint.h>
 
 #include "attributes.h"
-#include "version.h"
 
 #define AES_CTR_KEY_SIZE (16)
 #define AES_CTR_IV_SIZE (8)
@@ -33,23 +38,29 @@
 struct AVAESCTR;
 
 /**
- * Allocate an AVAESCTR context.
+ * Allocate an AVAESCTR codecContext.
  */
 struct AVAESCTR *av_aes_ctr_alloc(void);
 
 /**
- * Initialize an AVAESCTR context.
+ * Initialize an AVAESCTR codecContext.
+ *
+ * @param a The AVAESCTR codecContext to initialize
  * @param key encryption key, must have a length of AES_CTR_KEY_SIZE
  */
 int av_aes_ctr_init(struct AVAESCTR *a, const uint8_t *key);
 
 /**
- * Release an AVAESCTR context.
+ * Release an AVAESCTR codecContext.
+ *
+ * @param a The AVAESCTR codecContext
  */
 void av_aes_ctr_free(struct AVAESCTR *a);
 
 /**
- * Process a buffer using a previously initialized context.
+ * Process a buffer using a previously initialized codecContext.
+ *
+ * @param a The AVAESCTR codecContext
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
  * @param size the size of src and dst

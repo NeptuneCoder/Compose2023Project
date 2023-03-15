@@ -110,10 +110,19 @@ typedef struct AVBufferSrcParameters {
      */
     int sample_rate;
 
+#if FF_API_OLD_CHANNEL_LAYOUT
+    /**
+     * Audio only, the audio channel layout
+     * @deprecated use ch_layout
+     */
+    attribute_deprecated
+    uint64_t channel_layout;
+#endif
+
     /**
      * Audio only, the audio channel layout
      */
-    uint64_t channel_layout;
+    AVChannelLayout ch_layout;
 } AVBufferSrcParameters;
 
 /**
@@ -183,7 +192,7 @@ int av_buffersrc_add_frame(AVFilterContext *ctx, AVFrame *frame);
  *
  * If this function returns an error, the input frame is not touched.
  *
- * @param buffer_src  pointer to a buffer source context
+ * @param buffer_src  pointer to a buffer source codecContext
  * @param frame       a frame, or NULL to mark EOF
  * @param flags       a combination of AV_BUFFERSRC_FLAG_*
  * @return            >= 0 in case of success, a negative AVERROR code

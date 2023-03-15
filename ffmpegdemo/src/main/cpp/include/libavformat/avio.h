@@ -27,12 +27,13 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
-#include "libavutil/common.h"
+#include "libavutil/attributes.h"
 #include "libavutil/dict.h"
 #include "libavutil/log.h"
 
-#include "libavformat/version.h"
+#include "libavformat/version_major.h"
 
 /**
  * Seeking works like for a local file.
@@ -100,9 +101,13 @@ typedef struct AVIODirEntry {
     int64_t filemode;                     /**< Unix file mode, -1 if unknown. */
 } AVIODirEntry;
 
+#if FF_API_AVIODIRCONTEXT
 typedef struct AVIODirContext {
     struct URLContext *url_context;
 } AVIODirContext;
+#else
+typedef struct AVIODirContext AVIODirContext;
+#endif
 
 /**
  * Different data types that can be returned via the AVIO
@@ -148,9 +153,9 @@ enum AVIODataMarkerType {
 
 /**
  * Bytestream IO Context.
- * New fields can be added to the end with minor version bumps.
- * Removal, reordering and changes to existing fields require a major
- * version bump.
+ * New public fields can be added with minor version bumps.
+ * Removal, reordering and changes to existing public fields require
+ * a major version bump.
  * sizeof(AVIOContext) must not be used outside libav*.
  *
  * @note None of the function pointers in AVIOContext should be called
@@ -237,12 +242,14 @@ typedef struct AVIOContext {
     int64_t (*seek)(void *opaque, int64_t offset, int whence);
     int64_t pos;            /**< position in the file of the current buffer */
     int eof_reached;        /**< true if was unable to read due to error or eof */
+    int error;              /**< contains the error code or 0 if no error happened */
     int write_flag;         /**< true if open for writing */
     int max_packet_size;
+    int min_packet_size;    /**< Try to buffer at least this amount of data
+                                 before flushing it. */
     unsigned long checksum;
     unsigned char *checksum_ptr;
     unsigned long (*update_checksum)(unsigned long checksum, const uint8_t *buf, unsigned int size);
-    int error;              /**< contains the error code or 0 if no error happened */
     /**
      * Pause or resume playback for network streaming protocols - e.g. MMS.
      */
@@ -260,48 +267,11 @@ typedef struct AVIOContext {
     int seekable;
 
     /**
-     * max filesize, used to limit allocations
-     * This field is internal to libavformat and access from outside is not allowed.
-     */
-    int64_t maxsize;
-
-    /**
      * avio_read and avio_write should if possible be satisfied directly
      * instead of going through a buffer, and avio_seek will always
      * call the underlying seek function directly.
      */
     int direct;
-
-    /**
-     * Bytes read statistic
-     * This field is internal to libavformat and access from outside is not allowed.
-     */
-    int64_t bytes_read;
-
-    /**
-     * seek statistic
-     * This field is internal to libavformat and access from outside is not allowed.
-     */
-    int seek_count;
-
-    /**
-     * writeout statistic
-     * This field is internal to libavformat and access from outside is not allowed.
-     */
-    int writeout_count;
-
-    /**
-     * Original buffer size
-     * used internally after probing and ensure seekback to reset the buffer size
-     * This field is internal to libavformat and access from outside is not allowed.
-     */
-    int orig_buffer_size;
-
-    /**
-     * Threshold to favor readahead over seek.
-     * This is current internal only, do not use from outside.
-     */
-    int short_seek_threshold;
 
     /**
      * ',' separated list of allowed protocols.
@@ -326,29 +296,20 @@ typedef struct AVIOContext {
     int ignore_boundary_point;
 
     /**
-     * Internal, not meant to be used from outside of AVIOContext.
-     */
-    enum AVIODataMarkerType current_type;
-    int64_t last_time;
-
-    /**
-     * A callback that is used instead of short_seek_threshold.
-     * This is current internal only, do not use from outside.
-     */
-    int (*short_seek_get)(void *opaque);
-
-    int64_t written;
-
-    /**
      * Maximum reached position before a backward seek in the write buffer,
      * used keeping track of already written data for a later flush.
      */
     unsigned char *buf_ptr_max;
 
     /**
-     * Try to buffer at least this amount of data before flushing it
+     * Read-only statistic of bytes read for this AVIOContext.
      */
-    int min_packet_size;
+    int64_t bytes_read;
+
+    /**
+     * Read-only statistic of bytes written for this AVIOContext.
+     */
+    int64_t bytes_written;
 } AVIOContext;
 
 /**
@@ -375,28 +336,9 @@ const char *avio_find_protocol_name(const char *url);
 int avio_check(const char *url, int flags);
 
 /**
- * Move or rename a resource.
- *
- * @note url_src and url_dst should share the same protocol and authority.
- *
- * @param url_src url to resource to be moved
- * @param url_dst new url to resource if the operation succeeded
- * @return >=0 on success or negative on error.
- */
-int avpriv_io_move(const char *url_src, const char *url_dst);
-
-/**
- * Delete a resource.
- *
- * @param url resource to be deleted.
- * @return >=0 on success or negative on error.
- */
-int avpriv_io_delete(const char *url);
-
-/**
  * Open directory for reading.
  *
- * @param s       directory read context. Pointer to a NULL pointer must be passed.
+ * @param s       directory read codecContext. Pointer to a NULL pointer must be passed.
  * @param url     directory to be listed.
  * @param options A dictionary filled with protocol-private options. On return
  *                this parameter will be destroyed and replaced with a dictionary
@@ -411,7 +353,7 @@ int avio_open_dir(AVIODirContext **s, const char *url, AVDictionary **options);
  * Returned entry must be freed with avio_free_directory_entry(). In particular
  * it may outlive AVIODirContext.
  *
- * @param s         directory read context.
+ * @param s         directory read codecContext.
  * @param[out] next next entry or NULL when no more entries.
  * @return >=0 on success or negative on error. End of list is not considered an
  *             error.
@@ -424,7 +366,7 @@ int avio_read_dir(AVIODirContext *s, AVIODirEntry **next);
  * @note Entries created using avio_read_dir() are not deleted and must be
  * freeded with avio_free_directory_entry().
  *
- * @param s         directory read context.
+ * @param s         directory read codecContext.
  * @return >=0 on success or negative on error.
  */
 int avio_close_dir(AVIODirContext **s);
@@ -469,9 +411,9 @@ AVIOContext *avio_alloc_context(
                   int64_t (*seek)(void *opaque, int64_t offset, int whence));
 
 /**
- * Free the supplied IO context and everything associated with it.
+ * Free the supplied IO codecContext and everything associated with it.
  *
- * @param s Double pointer to the IO context. This function will write NULL
+ * @param s Double pointer to the IO codecContext. This function will write NULL
  * into s.
  */
 void avio_context_free(AVIOContext **s);
@@ -516,6 +458,7 @@ int avio_put_str16be(AVIOContext *s, const char *str);
  *
  * Zero-length ranges are omitted from the output.
  *
+ * @param s    the AVIOContext
  * @param time the stream time the current bytestream pos corresponds to
  *             (in AV_TIME_BASE units), or AV_NOPTS_VALUE if unknown or not
  *             applicable
@@ -572,20 +515,26 @@ int64_t avio_size(AVIOContext *s);
 int avio_feof(AVIOContext *s);
 
 /**
- * Writes a formatted string to the context.
+ * Writes a formatted string to the codecContext taking a va_list.
+ * @return number of bytes written, < 0 on error.
+ */
+int avio_vprintf(AVIOContext *s, const char *fmt, va_list ap);
+
+/**
+ * Writes a formatted string to the codecContext.
  * @return number of bytes written, < 0 on error.
  */
 int avio_printf(AVIOContext *s, const char *fmt, ...) av_printf_format(2, 3);
 
 /**
- * Write a NULL terminated array of strings to the context.
+ * Write a NULL terminated array of strings to the codecContext.
  * Usually you don't need to use this function directly but its macro wrapper,
  * avio_print.
  */
 void avio_print_string_array(AVIOContext *s, const char *strings[]);
 
 /**
- * Write strings (const char *) to the context.
+ * Write strings (const char *) to the codecContext.
  * This is a convenience macro around avio_print_string_array and it
  * automatically creates the string array from the variable argument list.
  * For simple string concatenations this function is more performant than using
@@ -680,12 +629,12 @@ int avio_get_str16be(AVIOContext *pb, int maxlen, char *buf, int buflen);
 
 /**
  * Use non-blocking mode.
- * If this flag is set, operations on the context will return
+ * If this flag is set, operations on the codecContext will return
  * AVERROR(EAGAIN) if they can not be performed immediately.
- * If this flag is not set, operations on the context will never return
+ * If this flag is not set, operations on the codecContext will never return
  * AVERROR(EAGAIN).
  * Note that this flag does not affect the opening/connecting of the
- * context. Connecting a protocol will always block if necessary (e.g. on
+ * codecContext. Connecting a protocol will always block if necessary (e.g. on
  * network protocols) but never hang (e.g. on busy devices).
  * Warning: non-blocking protocols is work-in-progress; this flag may be
  * silently ignored.
@@ -766,7 +715,7 @@ int avio_closep(AVIOContext **s);
 /**
  * Open a write only memory stream.
  *
- * @param s new IO context
+ * @param s new IO codecContext
  * @return zero if no error.
  */
 int avio_open_dyn_buf(AVIOContext **s);
@@ -777,7 +726,7 @@ int avio_open_dyn_buf(AVIOContext **s);
  * The buffer must NOT be freed.
  * No padding is added to the buffer.
  *
- * @param s IO context
+ * @param s IO codecContext
  * @param pbuffer pointer to a byte buffer
  * @return the length of the byte buffer
  */
@@ -788,7 +737,7 @@ int avio_get_dyn_buf(AVIOContext *s, uint8_t **pbuffer);
  * must be freed with av_free().
  * Padding of AV_INPUT_BUFFER_PADDING_SIZE is added to the buffer.
  *
- * @param s IO context
+ * @param s IO codecContext
  * @param pbuffer pointer to a byte buffer
  * @return the length of the byte buffer
  */
@@ -818,7 +767,7 @@ const AVClass *avio_protocol_get_class(const char *name);
  * Pause and resume playing - only meaningful if using a network streaming
  * protocol (e.g. MMS).
  *
- * @param h     IO context from which to call the read_pause function pointer
+ * @param h     IO codecContext from which to call the read_pause function pointer
  * @param pause 1 for pause, 0 for resume
  */
 int     avio_pause(AVIOContext *h, int pause);
@@ -827,7 +776,7 @@ int     avio_pause(AVIOContext *h, int pause);
  * Seek to a given timestamp relative to some component stream.
  * Only meaningful if using a network streaming protocol (e.g. MMS.).
  *
- * @param h IO context from which to call the seek function pointers
+ * @param h IO codecContext from which to call the seek function pointers
  * @param stream_index The stream index that the timestamp is relative to.
  *        If stream_index is (-1) the timestamp should be in AV_TIME_BASE
  *        units from the beginning of the presentation.
@@ -857,9 +806,9 @@ struct AVBPrint;
 int avio_read_to_bprint(AVIOContext *h, struct AVBPrint *pb, size_t max_size);
 
 /**
- * Accept and allocate a client context on a server context.
- * @param  s the server context
- * @param  c the client context, must be unallocated
+ * Accept and allocate a client codecContext on a server codecContext.
+ * @param  s the server codecContext
+ * @param  c the client codecContext, must be unallocated
  * @return   >= 0 on success or a negative value corresponding
  *           to an AVERROR on failure
  */
@@ -868,7 +817,7 @@ int avio_accept(AVIOContext *s, AVIOContext **c);
 /**
  * Perform one step of the protocol handshake to accept a new client.
  * This function must be called on a client returned by avio_accept() before
- * using it as a read/write context.
+ * using it as a read/write codecContext.
  * It is separate from avio_accept() because it may block.
  * A step of the handshake is defined by places where the application may
  * decide to change the proceedings.
@@ -879,7 +828,7 @@ int avio_accept(AVIOContext *s, AVIOContext **c);
  * If the handshake is already finished, avio_handshake() does nothing and
  * returns 0 immediately.
  *
- * @param  c the client context to perform the handshake on
+ * @param  c the client codecContext to perform the handshake on
  * @return   0   on a complete and successful handshake
  *           > 0 if the handshake progressed, but is not complete
  *           < 0 for an AVERROR code

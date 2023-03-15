@@ -48,7 +48,7 @@ typedef struct AVD3D11VADeviceContext {
      * set the libavcodec decoding device.
      *
      * Must be set by the user. This is the only mandatory field - the other
-     * device context fields are set from this and are available for convenience.
+     * device codecContext fields are set from this and are available for convenience.
      *
      * Deallocating the AVHWDeviceContext will always release this interface,
      * and it does not matter whether it was user-allocated.
@@ -153,7 +153,7 @@ typedef struct AVD3D11VAFramesContext {
 
     /**
      * D3D11_TEXTURE2D_DESC.BindFlags used for texture creation. The user must
-     * at least set D3D11_BIND_DECODER if the frames context is to be used for
+     * at least set D3D11_BIND_DECODER if the frames codecContext is to be used for
      * video decoding.
      * This field is ignored/invalid if a user-allocated texture is provided.
      */
@@ -164,6 +164,15 @@ typedef struct AVD3D11VAFramesContext {
      * This field is ignored/invalid if a user-allocated texture is provided.
      */
     UINT MiscFlags;
+
+    /**
+     * In case if texture structure member above is not NULL contains the same texture
+     * pointer for all elements and different indexes into the array texture.
+     * In case if texture structure member above is NULL, all elements contains
+     * pointers to separate non-array textures and 0 indexes.
+     * This field is ignored/invalid if a user-allocated texture is provided.
+    */
+    AVD3D11FrameDescriptor *texture_infos;
 } AVD3D11VAFramesContext;
 
 #endif /* AVUTIL_HWCONTEXT_D3D11VA_H */

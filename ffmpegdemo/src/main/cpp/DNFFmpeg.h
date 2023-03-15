@@ -7,25 +7,27 @@
 #include <pthread.h>
 #include <jni.h>
 #include "macro.h"
+#include "JavaCallHelper.h"
+#include "VideoChannel.h"
+#include "AudioChannel.h"
+
 
 extern "C" {
 #include <libavformat/avformat.h>
 }
 
-#include "JavaCallHelper.h"
-#include "VideoChannel.h"
-#include "AudioChannel.h"
 
 class DNFFmpeg {
 private:
     char *dataSource;
     pthread_t pid;
-    AVFormatContext *avFormatContext = 0;//包含了视频的信息，如宽高，
+    AVFormatContext *formatContext = 0;//包含了视频的信息，如宽高，
     JavaCallHelper *javaCallHelper;
     VideoChannel *videoChannel = 0;
     AudioChannel *audioChannel = 0;
     int isPlaying = 0;
     pthread_t start_pid;
+    RenderFrameCallback callback;
 public:
     DNFFmpeg(JavaCallHelper *javaCallHelper, const char *dataSource);
 
@@ -39,6 +41,8 @@ public:
     void start();
 
     void _start();
+
+    void setRenderFrameCallback(RenderFrameCallback callback);
 };
 
 #endif //COMPOSE2023PROJECT_DNFFMPEG_H

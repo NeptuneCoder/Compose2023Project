@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
         val surfaceView = findViewById<SurfaceView>(R.id.surface_view)
         val onStartBtn = findViewById<Button>(R.id.on_start)
         val onStopBtn = findViewById<Button>(R.id.on_stop)
-        dnPlayer.setDataSource("rtmp://ns8.indexforce.com/home/mystream") //rtmp://live.hkstv.hk.lxdns.com/live/hks")
+        dnPlayer.setDataSource("http://39.134.65.162/PLTV/88888888/224/3221225611/index.m3u8") //rtmp://live.hkstv.hk.lxdns.com/live/hks")
         dnPlayer.setSurfaceView(surfaceView)
         dnPlayer.setOnPrepaseListener(object : DNPlayer.OnPreparsListener {
             override fun onPrepase() {

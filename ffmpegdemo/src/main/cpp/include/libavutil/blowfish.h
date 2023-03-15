@@ -38,23 +38,23 @@ typedef struct AVBlowfish {
 } AVBlowfish;
 
 /**
- * Allocate an AVBlowfish context.
+ * Allocate an AVBlowfish codecContext.
  */
 AVBlowfish *av_blowfish_alloc(void);
 
 /**
- * Initialize an AVBlowfish context.
+ * Initialize an AVBlowfish codecContext.
  *
- * @param ctx an AVBlowfish context
+ * @param ctx an AVBlowfish codecContext
  * @param key a key
  * @param key_len length of the key
  */
 void av_blowfish_init(struct AVBlowfish *ctx, const uint8_t *key, int key_len);
 
 /**
- * Encrypt or decrypt a buffer using a previously initialized context.
+ * Encrypt or decrypt a buffer using a previously initialized codecContext.
  *
- * @param ctx an AVBlowfish context
+ * @param ctx an AVBlowfish codecContext
  * @param xl left four bytes halves of input to be encrypted
  * @param xr right four bytes halves of input to be encrypted
  * @param decrypt 0 for encryption, 1 for decryption
@@ -63,9 +63,9 @@ void av_blowfish_crypt_ecb(struct AVBlowfish *ctx, uint32_t *xl, uint32_t *xr,
                            int decrypt);
 
 /**
- * Encrypt or decrypt a buffer using a previously initialized context.
+ * Encrypt or decrypt a buffer using a previously initialized codecContext.
  *
- * @param ctx an AVBlowfish context
+ * @param ctx an AVBlowfish codecContext
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
  * @param count number of 8 byte blocks

@@ -39,10 +39,10 @@ https://console.qweather.com/#/apps
 #### 需要ApplicationContext上下文
 
 ```kotlin
-class TestApplication @Inject constructor(private val context: Context) {
+class TestApplication @Inject constructor(private val codecContext: Context) {
 
     fun appIsNull() {
-        Log.i("appIsNull", "appIsNull == ${context == null}")
+        Log.i("appIsNull", "appIsNull == ${codecContext == null}")
     }
 }
 
@@ -61,7 +61,7 @@ class TestApplicationModule {
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val snapi: SNNetService,
-    @ApplicationContext private val context: Context,
+    @ApplicationContext private val codecContext: Context,
     private val app: TestApplication
 
 ) : ViewModel() {

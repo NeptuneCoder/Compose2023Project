@@ -32,7 +32,6 @@
 #include <stdint.h>
 
 #include "attributes.h"
-#include "version.h"
 
 /**
  * @defgroup lavu_sha512 SHA-512
@@ -56,14 +55,14 @@ extern const int av_sha512_size;
 struct AVSHA512;
 
 /**
- * Allocate an AVSHA512 context.
+ * Allocate an AVSHA512 codecContext.
  */
 struct AVSHA512 *av_sha512_alloc(void);
 
 /**
  * Initialize SHA-2 512 hashing.
  *
- * @param context pointer to the function context (of size av_sha512_size)
+ * @param context pointer to the function codecContext (of size av_sha512_size)
  * @param bits    number of bits in digest (224, 256, 384 or 512 bits)
  * @return        zero if initialization succeeded, -1 otherwise
  */
@@ -72,20 +71,16 @@ int av_sha512_init(struct AVSHA512* context, int bits);
 /**
  * Update hash value.
  *
- * @param context hash function context
+ * @param context hash function codecContext
  * @param data    input data to update hash with
  * @param len     input data length
  */
-#if FF_API_CRYPTO_SIZE_T
-void av_sha512_update(struct AVSHA512* context, const uint8_t* data, unsigned int len);
-#else
 void av_sha512_update(struct AVSHA512* context, const uint8_t* data, size_t len);
-#endif
 
 /**
  * Finish hashing and output digest value.
  *
- * @param context hash function context
+ * @param context hash function codecContext
  * @param digest  buffer where output digest value is stored
  */
 void av_sha512_final(struct AVSHA512* context, uint8_t *digest);

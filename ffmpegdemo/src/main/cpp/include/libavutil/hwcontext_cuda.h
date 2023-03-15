@@ -50,7 +50,7 @@ typedef struct AVCUDADeviceContext {
  */
 
 /**
- * @defgroup hwcontext_cuda Device context creation flags
+ * @defgroup hwcontext_cuda Device codecContext creation flags
  *
  * Flags for av_hwdevice_ctx_create.
  *
@@ -58,7 +58,7 @@ typedef struct AVCUDADeviceContext {
  */
 
 /**
- * Use primary device context instead of creating a new one.
+ * Use primary device codecContext instead of creating a new one.
  */
 #define AV_CUDA_USE_PRIMARY_CONTEXT (1 << 0)
 

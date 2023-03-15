@@ -14,7 +14,7 @@ file(GLOB source_file_c *.cpp)
 add_library(
         nativeLib #生成的库的名字
         SHARED #表示生成的库位动态库
-        ${source_file_c})#编译的源文件，如果是多个则依次写在后面，这里是用到了相对路径，如果其他目录需要指定路径
+        ${source_file_c} SafeQueue.h)#编译的源文件，如果是多个则依次写在后面，这里是用到了相对路径，如果其他目录需要指定路径
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -22,4 +22,4 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
-target_link_libraries(nativeLib avcodec avfilter avformat avutil swresample swscale ${log-lib} z)
+target_link_libraries(nativeLib avcodec avfilter avformat avutil swresample swscale ${log-lib} z android)

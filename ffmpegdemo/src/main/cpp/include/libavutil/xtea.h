@@ -37,33 +37,33 @@ typedef struct AVXTEA {
 } AVXTEA;
 
 /**
- * Allocate an AVXTEA context.
+ * Allocate an AVXTEA codecContext.
  */
 AVXTEA *av_xtea_alloc(void);
 
 /**
- * Initialize an AVXTEA context.
+ * Initialize an AVXTEA codecContext.
  *
- * @param ctx an AVXTEA context
+ * @param ctx an AVXTEA codecContext
  * @param key a key of 16 bytes used for encryption/decryption,
  *            interpreted as big endian 32 bit numbers
  */
 void av_xtea_init(struct AVXTEA *ctx, const uint8_t key[16]);
 
 /**
- * Initialize an AVXTEA context.
+ * Initialize an AVXTEA codecContext.
  *
- * @param ctx an AVXTEA context
+ * @param ctx an AVXTEA codecContext
  * @param key a key of 16 bytes used for encryption/decryption,
  *            interpreted as little endian 32 bit numbers
  */
 void av_xtea_le_init(struct AVXTEA *ctx, const uint8_t key[16]);
 
 /**
- * Encrypt or decrypt a buffer using a previously initialized context,
+ * Encrypt or decrypt a buffer using a previously initialized codecContext,
  * in big endian format.
  *
- * @param ctx an AVXTEA context
+ * @param ctx an AVXTEA codecContext
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
  * @param count number of 8 byte blocks
@@ -74,10 +74,10 @@ void av_xtea_crypt(struct AVXTEA *ctx, uint8_t *dst, const uint8_t *src,
                    int count, uint8_t *iv, int decrypt);
 
 /**
- * Encrypt or decrypt a buffer using a previously initialized context,
+ * Encrypt or decrypt a buffer using a previously initialized codecContext,
  * in little endian format.
  *
- * @param ctx an AVXTEA context
+ * @param ctx an AVXTEA codecContext
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
  * @param count number of 8 byte blocks

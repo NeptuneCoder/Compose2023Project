@@ -37,24 +37,24 @@ extern const int av_tea_size;
 struct AVTEA;
 
 /**
-  * Allocate an AVTEA context
+  * Allocate an AVTEA codecContext
   * To free the struct: av_free(ptr)
   */
 struct AVTEA *av_tea_alloc(void);
 
 /**
- * Initialize an AVTEA context.
+ * Initialize an AVTEA codecContext.
  *
- * @param ctx an AVTEA context
+ * @param ctx an AVTEA codecContext
  * @param key a key of 16 bytes used for encryption/decryption
  * @param rounds the number of rounds in TEA (64 is the "standard")
  */
 void av_tea_init(struct AVTEA *ctx, const uint8_t key[16], int rounds);
 
 /**
- * Encrypt or decrypt a buffer using a previously initialized context.
+ * Encrypt or decrypt a buffer using a previously initialized codecContext.
  *
- * @param ctx an AVTEA context
+ * @param ctx an AVTEA codecContext
  * @param dst destination array, can be equal to src
  * @param src source array, can be equal to dst
  * @param count number of 8 byte blocks

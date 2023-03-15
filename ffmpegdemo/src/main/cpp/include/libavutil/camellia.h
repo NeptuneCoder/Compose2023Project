@@ -38,28 +38,28 @@ extern const int av_camellia_size;
 struct AVCAMELLIA;
 
 /**
-  * Allocate an AVCAMELLIA context
+  * Allocate an AVCAMELLIA codecContext
   * To free the struct: av_free(ptr)
   */
 struct AVCAMELLIA *av_camellia_alloc(void);
 
 /**
-  * Initialize an AVCAMELLIA context.
+  * Initialize an AVCAMELLIA codecContext.
   *
-  * @param ctx an AVCAMELLIA context
+  * @param ctx an AVCAMELLIA codecContext
   * @param key a key of 16, 24, 32 bytes used for encryption/decryption
   * @param key_bits number of keybits: possible are 128, 192, 256
  */
 int av_camellia_init(struct AVCAMELLIA *ctx, const uint8_t *key, int key_bits);
 
 /**
-  * Encrypt or decrypt a buffer using a previously initialized context
+  * Encrypt or decrypt a buffer using a previously initialized codecContext
   *
-  * @param ctx an AVCAMELLIA context
+  * @param ctx an AVCAMELLIA codecContext
   * @param dst destination array, can be equal to src
   * @param src source array, can be equal to dst
   * @param count number of 16 byte blocks
-  * @paran iv initialization vector for CBC mode, NULL for ECB mode
+  * @param iv initialization vector for CBC mode, NULL for ECB mode
   * @param decrypt 0 for encryption, 1 for decryption
  */
 void av_camellia_crypt(struct AVCAMELLIA *ctx, uint8_t *dst, const uint8_t *src, int count, uint8_t* iv, int decrypt);

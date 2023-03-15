@@ -38,14 +38,14 @@ extern const int av_cast5_size;
 struct AVCAST5;
 
 /**
-  * Allocate an AVCAST5 context
+  * Allocate an AVCAST5 codecContext
   * To free the struct: av_free(ptr)
   */
 struct AVCAST5 *av_cast5_alloc(void);
 /**
-  * Initialize an AVCAST5 context.
+  * Initialize an AVCAST5 codecContext.
   *
-  * @param ctx an AVCAST5 context
+  * @param ctx an AVCAST5 codecContext
   * @param key a key of 5,6,...16 bytes used for encryption/decryption
   * @param key_bits number of keybits: possible are 40,48,...,128
   * @return 0 on success, less than 0 on failure
@@ -53,9 +53,9 @@ struct AVCAST5 *av_cast5_alloc(void);
 int av_cast5_init(struct AVCAST5 *ctx, const uint8_t *key, int key_bits);
 
 /**
-  * Encrypt or decrypt a buffer using a previously initialized context, ECB mode only
+  * Encrypt or decrypt a buffer using a previously initialized codecContext, ECB mode only
   *
-  * @param ctx an AVCAST5 context
+  * @param ctx an AVCAST5 codecContext
   * @param dst destination array, can be equal to src
   * @param src source array, can be equal to dst
   * @param count number of 8 byte blocks
@@ -64,9 +64,9 @@ int av_cast5_init(struct AVCAST5 *ctx, const uint8_t *key, int key_bits);
 void av_cast5_crypt(struct AVCAST5 *ctx, uint8_t *dst, const uint8_t *src, int count, int decrypt);
 
 /**
-  * Encrypt or decrypt a buffer using a previously initialized context
+  * Encrypt or decrypt a buffer using a previously initialized codecContext
   *
-  * @param ctx an AVCAST5 context
+  * @param ctx an AVCAST5 codecContext
   * @param dst destination array, can be equal to src
   * @param src source array, can be equal to dst
   * @param count number of 8 byte blocks

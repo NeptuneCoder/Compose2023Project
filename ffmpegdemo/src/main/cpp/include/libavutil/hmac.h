@@ -23,7 +23,6 @@
 
 #include <stdint.h>
 
-#include "version.h"
 /**
  * @defgroup lavu_hmac HMAC
  * @ingroup lavu_crypto
@@ -42,20 +41,20 @@ enum AVHMACType {
 typedef struct AVHMAC AVHMAC;
 
 /**
- * Allocate an AVHMAC context.
+ * Allocate an AVHMAC codecContext.
  * @param type The hash function used for the HMAC.
  */
 AVHMAC *av_hmac_alloc(enum AVHMACType type);
 
 /**
- * Free an AVHMAC context.
- * @param ctx The context to free, may be NULL
+ * Free an AVHMAC codecContext.
+ * @param ctx The codecContext to free, may be NULL
  */
 void av_hmac_free(AVHMAC *ctx);
 
 /**
- * Initialize an AVHMAC context with an authentication key.
- * @param ctx    The HMAC context
+ * Initialize an AVHMAC codecContext with an authentication key.
+ * @param ctx    The HMAC codecContext
  * @param key    The authentication key
  * @param keylen The length of the key, in bytes
  */
@@ -63,7 +62,7 @@ void av_hmac_init(AVHMAC *ctx, const uint8_t *key, unsigned int keylen);
 
 /**
  * Hash data with the HMAC.
- * @param ctx  The HMAC context
+ * @param ctx  The HMAC codecContext
  * @param data The data to hash
  * @param len  The length of the data, in bytes
  */
@@ -71,7 +70,7 @@ void av_hmac_update(AVHMAC *ctx, const uint8_t *data, unsigned int len);
 
 /**
  * Finish hashing and output the HMAC digest.
- * @param ctx    The HMAC context
+ * @param ctx    The HMAC codecContext
  * @param out    The output buffer to write the digest into
  * @param outlen The length of the out buffer, in bytes
  * @return       The number of bytes written to out, or a negative error code.
@@ -80,7 +79,7 @@ int av_hmac_final(AVHMAC *ctx, uint8_t *out, unsigned int outlen);
 
 /**
  * Hash an array of data with a key.
- * @param ctx    The HMAC context
+ * @param ctx    The HMAC codecContext
  * @param data   The data to hash
  * @param len    The length of the data, in bytes
  * @param key    The authentication key

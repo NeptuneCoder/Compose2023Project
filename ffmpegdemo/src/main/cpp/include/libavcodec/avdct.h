@@ -22,7 +22,7 @@
 #include "libavutil/opt.h"
 
 /**
- * AVDCT context.
+ * AVDCT codecContext.
  * @note function pointers can be NULL if the specific features have been
  *       disabled at build time.
  */
@@ -74,7 +74,7 @@ typedef struct AVDCT {
 } AVDCT;
 
 /**
- * Allocates a AVDCT context.
+ * Allocates a AVDCT codecContext.
  * This needs to be initialized with avcodec_dct_init() after optionally
  * configuring it with AVOptions.
  *
