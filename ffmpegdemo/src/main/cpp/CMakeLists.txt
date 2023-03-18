@@ -22,4 +22,6 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
-target_link_libraries(nativeLib avcodec avfilter avformat avutil swresample swscale ${log-lib} z android)
+target_link_libraries(nativeLib avcodec avfilter avformat avutil swresample swscale ${log-lib} z android
+        OpenSLES #Android NDK 提供的进行音频播放工具
+        )

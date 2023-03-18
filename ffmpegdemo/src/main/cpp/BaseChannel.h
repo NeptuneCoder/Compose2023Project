@@ -21,18 +21,19 @@ public:
     virtual ~BaseChannel();
 
 
-
     static void releaseAvPacket(AVPacket **avPacket);
 
     static void releaseAvFrame(AVFrame **avFrame);
 
 
-
 public:
     int index;
-    SafeQueue<AVPacket *> packets;
-    int isPlaying = 0;
+    SafeQueue<AVPacket *> packets;//编码数据包队列
+    SafeQueue<AVFrame *> avFrames;//解码数据包队列
     AVCodecContext *codecContext;
+
+    int isPlaying = 0;
+
 
 
 };

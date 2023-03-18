@@ -23,16 +23,16 @@ public:
 
     void decode();
 
-    void setIsPlaying(int isPlaying);
 
     void render();
 
     void setRenderFrameCallback(RenderFrameCallback callback);
 
+public:
+
 private:
     pthread_t decode_pid;
     pthread_t render_pid;
-    SafeQueue<AVFrame *> avFrames;
     SwsContext *swsContext;
     RenderFrameCallback callback;
 };

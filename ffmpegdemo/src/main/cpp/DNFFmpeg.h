@@ -43,6 +43,8 @@ public:
     void _start();
 
     void setRenderFrameCallback(RenderFrameCallback callback);
+
+    void stop();
 };
 
 #endif //COMPOSE2023PROJECT_DNFFMPEG_H

@@ -52,6 +52,9 @@ class MainActivity : ComponentActivity() {
         onStartBtn.setOnClickListener {
             dnPlayer.prepare()
         }
+        onStopBtn.setOnClickListener {
+            dnPlayer.stop()
+        }
     }
 }
 

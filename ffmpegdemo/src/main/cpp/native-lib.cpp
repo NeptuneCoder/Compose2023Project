@@ -109,3 +109,11 @@ Java_com_example_ffmpegdemo_DNPlayer_native_1setSurface(JNIEnv *env, jobject thi
     window = ANativeWindow_fromSurface(env, surface);
     pthread_mutex_unlock(&mutex);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_ffmpegdemo_DNPlayer_native_1stop(JNIEnv *env, jobject thiz) {
+    if (dnFFmpeg) {
+        dnFFmpeg->stop();
+    }
+}

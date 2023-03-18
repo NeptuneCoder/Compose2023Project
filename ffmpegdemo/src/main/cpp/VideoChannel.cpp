@@ -46,6 +46,7 @@ void VideoChannel::decode() {
         }
         //把数据发给解码器
         ret = avcodec_send_packet(codecContext, packet);
+
 //        if (ret == AVERROR(EAGAIN)) {
 //          表示解码器中的数据太多急需处理
 //            continue;
@@ -105,11 +106,6 @@ void VideoChannel::render() {
 void VideoChannel::setRenderFrameCallback(RenderFrameCallback callback) {
     this->callback = callback;
 }
-
-void VideoChannel::setIsPlaying(int isPlaying) {
-    this->isPlaying = isPlaying;
-};
-
 
 VideoChannel::~VideoChannel() {
     this->avFrames.setReleaseCallback(releaseAvFrame);

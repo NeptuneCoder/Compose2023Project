@@ -53,8 +53,10 @@ class DNPlayer : SurfaceHolder.Callback {
     }
 
     fun stop() {
-
+        native_stop()
     }
+
+
 
     fun release() {
 
@@ -108,5 +110,6 @@ class DNPlayer : SurfaceHolder.Callback {
     external fun native_prepare(dataSource: String)
     external fun native_start()
     external fun native_setSurface(surface: Surface)
+    external fun native_stop()
 }
 

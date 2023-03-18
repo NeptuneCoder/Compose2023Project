@@ -107,6 +107,7 @@ void DNFFmpeg::_prepare() {
         if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             //0
             audioChannel = new AudioChannel(i, codecContext);
+
         } else if (codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             //1
             videoChannel = new VideoChannel(i, codecContext);
@@ -121,7 +122,6 @@ void DNFFmpeg::_prepare() {
     LOGE("这里成功了");
     //准备好了，开始回调java方法
     javaCallHelper->onPrepase(THREAD_CHILD);
-
 }
 
 
@@ -135,8 +135,11 @@ void DNFFmpeg::start() {
     //应该避免在主线程中执行
     isPlaying = 1;
     if (videoChannel) {
-        videoChannel->packets.setWork(1);
+
         videoChannel->play();
+    }
+    if (audioChannel) {
+        audioChannel->play();
     }
     pthread_create(&start_pid, 0, task_start_play, this);
 }
@@ -155,8 +158,8 @@ void DNFFmpeg::_start() {
         if (ret == 0) {//表示成功
             //判断当前数据是音频还是视频？
             if (audioChannel && audioChannel->index == avPacket->stream_index) {//表示视频
-
-
+                //将音频数据放到
+                audioChannel->packets.push(avPacket);
             } else if (videoChannel && videoChannel->index == avPacket->stream_index) {
                 //将读取到的流放到队列中取
                 videoChannel->packets.push(avPacket);
@@ -169,4 +172,8 @@ void DNFFmpeg::_start() {
 
 void DNFFmpeg::setRenderFrameCallback(RenderFrameCallback callback) {
     this->callback = callback;
+}
+
+void DNFFmpeg::stop() {
+    isPlaying = 0;
 }
