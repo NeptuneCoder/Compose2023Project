@@ -135,7 +135,6 @@ void DNFFmpeg::start() {
     //应该避免在主线程中执行
     isPlaying = 1;
     if (videoChannel) {
-
         videoChannel->play();
     }
     if (audioChannel) {
