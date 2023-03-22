@@ -24,8 +24,15 @@
             android:layout_marginTop="20dp"
             android:text="Hello World!"
             android:textSize="22sp"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="@{(view)->model.updateData()}"
+            android:text="添加数据"
+            app:layout_constraintLeft_toRightOf="@id/user_info"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
