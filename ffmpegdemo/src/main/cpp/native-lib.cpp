@@ -80,12 +80,13 @@ void render(uint8_t *data, int lineszie, int w, int h) {
     pthread_mutex_unlock(&mutex);
 }
 
+JavaCallHelper *callHelper;
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_ffmpegdemo_DNPlayer_native_1prepare(JNIEnv *env, jobject thiz,
                                                      jstring data_source) {
     const char *dataSource = env->GetStringUTFChars(data_source, 0);
-    JavaCallHelper *callHelper = new JavaCallHelper(_vm, env, thiz);
+    callHelper = new JavaCallHelper(_vm, env, thiz);
     dnFFmpeg = new DNFFmpeg(callHelper, dataSource);
     dnFFmpeg->prepare();
     dnFFmpeg->setRenderFrameCallback(render);

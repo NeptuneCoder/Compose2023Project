@@ -15,7 +15,11 @@ JavaCallHelper::JavaCallHelper(JavaVM *vm, JNIEnv *env, jobject thiz) {
 }
 
 JavaCallHelper::~JavaCallHelper() {
-    env->DeleteLocalRef(thiz);
+    JNIEnv *env;
+    vm->AttachCurrentThread(&env, 0);
+    env->DeleteGlobalRef(thiz);
+    vm->DetachCurrentThread();
+
 }
 
 void JavaCallHelper::OnError(int thread, int errorCode) {

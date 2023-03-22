@@ -4,7 +4,8 @@
 
 #include "BaseChannel.h"
 
-BaseChannel::BaseChannel(int index, AVCodecContext *context) : index(index), codecContext(context) {
+BaseChannel::BaseChannel(int index, AVCodecContext *context, AVRational rational) //
+        : index(index), codecContext(context), rational(rational) {
     packets.setReleaseCallback(BaseChannel::releaseAvPacket);
     avFrames.setReleaseCallback(BaseChannel::releaseAvFrame);
 }
@@ -29,4 +30,9 @@ BaseChannel::~BaseChannel() {
     packets.clear();
 }
 
+void BaseChannel::stop() {
 
+}
+
+
+void BaseChannel::pause() {}

@@ -25,15 +25,6 @@ DNFFmpeg::DNFFmpeg(JavaCallHelper *javaCallHelper, const char *dataSource) {
 
 }
 
-DNFFmpeg::~DNFFmpeg() {
-    /**
-     * delete dataSource;
-       dataSource = 0;
-     */
-    DELETE(dataSource);
-    DELETE(javaCallHelper);
-}
-
 
 void DNFFmpeg::prepare() {
     pthread_create(&pid, 0, task_prepare, this);
@@ -44,8 +35,11 @@ int ret = 0;
 void DNFFmpeg::_prepare() {
     //需要网络初始化，不然ffmpeg不能联网
     avformat_network_init();
-
-    ret = avformat_open_input(&formatContext, dataSource, 0, 0);
+    AVDictionary *options = 0;
+    //设置连接超时为5s
+    av_dict_set(&options, "timeout", "5000000", 0);
+    ret = avformat_open_input(&formatContext, dataSource, 0, &options);
+    av_dict_free(&options);
     if (ret != 0) {//===0表示成功
         //反射调用
         javaCallHelper->OnError(THREAD_CHILD, FFMPEG_CAN_NOT_OPEN_URL);
@@ -70,7 +64,7 @@ void DNFFmpeg::_prepare() {
         AVCodecParameters *codecpar = formatContext->streams[i]->codecpar;
         AVStream *stream = formatContext->streams[i];
         //包含了 解码 这段流 的各种参数信息(宽、高、码率、帧率)
-
+        AVRational avRational = formatContext->streams[i]->avg_frame_rate;
         //无论视频还是音频都需要干的一些事情（获得解码器）
         // 1、通过 当前流 使用的 编码方式，查找解码器
         const AVCodec *dec = avcodec_find_decoder(codecpar->codec_id);
@@ -106,11 +100,16 @@ void DNFFmpeg::_prepare() {
         //音频
         if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             //0
-            audioChannel = new AudioChannel(i, codecContext);
-
+            audioChannel = new AudioChannel(i, codecContext, avRational);
+            if (videoChannel && audioChannel) {
+                videoChannel->setAudioChannel(audioChannel);
+            }
         } else if (codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             //1
-            videoChannel = new VideoChannel(i, codecContext);
+            videoChannel = new VideoChannel(i, codecContext, avRational);
+            if (videoChannel && audioChannel) {
+                videoChannel->setAudioChannel(audioChannel);
+            }
             videoChannel->setRenderFrameCallback(callback);
         }
     }
@@ -175,4 +174,30 @@ void DNFFmpeg::setRenderFrameCallback(RenderFrameCallback callback) {
 
 void DNFFmpeg::stop() {
     isPlaying = 0;
+    if (audioChannel) {
+        audioChannel->stop();
+
+    }
+    if (videoChannel) {
+        videoChannel->stop();
+    }
+}
+
+
+DNFFmpeg::~DNFFmpeg() {
+    /**
+     * delete dataSource;
+       dataSource = 0;
+     */
+    DELETE(dataSource);
+    DELETE(javaCallHelper);
+    DELETE(formatContext);
+    DELETE(videoChannel);
+    DELETE(audioChannel);
+
+
+    pthread_t pid;
+    int isPlaying = 0;
+    pthread_t start_pid;
+    RenderFrameCallback callback;
 }

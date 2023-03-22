@@ -51,7 +51,7 @@ typedef struct AVFifo AVFifo;
  * @param buf the buffer for reading or writing the data, depending on which
  *            av_fifo_*_cb function is called
  * @param nb_elems On entry contains the maximum number of elements that can be
- *                 read from / written into buf. On success, the callback should
+ *                 read from / written into buf. On success, the videoCallback should
  *                 update it to contain the number of elements actually written.
  *
  * @return 0 on success, a negative error code on failure (will be returned from
@@ -140,7 +140,7 @@ int av_fifo_grow2(AVFifo *f, size_t inc);
 int av_fifo_write(AVFifo *f, const void *buf, size_t nb_elems);
 
 /**
- * Write data from a user-provided callback into a FIFO.
+ * Write data from a user-provided videoCallback into a FIFO.
  *
  * @param f the FIFO buffer
  * @param read_cb Callback supplying the data to the FIFO. May be called
@@ -171,7 +171,7 @@ int av_fifo_write_from_cb(AVFifo *f, AVFifoCB read_cb,
 int av_fifo_read(AVFifo *f, void *buf, size_t nb_elems);
 
 /**
- * Feed data from a FIFO into a user-provided callback.
+ * Feed data from a FIFO into a user-provided videoCallback.
  *
  * @param f the FIFO buffer
  * @param write_cb Callback the data will be supplied to. May be called
@@ -179,7 +179,7 @@ int av_fifo_read(AVFifo *f, void *buf, size_t nb_elems);
  * @param opaque opaque user data to be provided to write_cb
  * @param nb_elems Should point to the maximum number of elements that can be
  *                 read. Will be updated to contain the total number of elements
- *                 actually sent to the callback.
+ *                 actually sent to the videoCallback.
  *
  * @return non-negative number on success, a negative error code on failure
  */
@@ -203,7 +203,7 @@ int av_fifo_read_to_cb(AVFifo *f, AVFifoCB write_cb,
 int av_fifo_peek(AVFifo *f, void *buf, size_t nb_elems, size_t offset);
 
 /**
- * Feed data from a FIFO into a user-provided callback.
+ * Feed data from a FIFO into a user-provided videoCallback.
  *
  * @param f the FIFO buffer
  * @param write_cb Callback the data will be supplied to. May be called
@@ -211,7 +211,7 @@ int av_fifo_peek(AVFifo *f, void *buf, size_t nb_elems, size_t offset);
  * @param opaque opaque user data to be provided to write_cb
  * @param nb_elems Should point to the maximum number of elements that can be
  *                 read. Will be updated to contain the total number of elements
- *                 actually sent to the callback.
+ *                 actually sent to the videoCallback.
  * @param offset number of initial elements to skip; offset + *nb_elems must not
  *               be larger than av_fifo_can_read(f).
  *
@@ -311,7 +311,7 @@ attribute_deprecated
 int av_fifo_space(const AVFifoBuffer *f);
 
 /**
- * Feed data at specific position from an AVFifoBuffer to a user-supplied callback.
+ * Feed data at specific position from an AVFifoBuffer to a user-supplied videoCallback.
  * Similar as av_fifo_gereric_read but without discarding data.
  * @param f AVFifoBuffer to read from
  * @param offset offset from current read position
@@ -328,7 +328,7 @@ attribute_deprecated
 int av_fifo_generic_peek_at(AVFifoBuffer *f, void *dest, int offset, int buf_size, void (*func)(void*, void*, int));
 
 /**
- * Feed data from an AVFifoBuffer to a user-supplied callback.
+ * Feed data from an AVFifoBuffer to a user-supplied videoCallback.
  * Similar as av_fifo_gereric_read but without discarding data.
  * @param f AVFifoBuffer to read from
  * @param buf_size number of bytes to read
@@ -344,7 +344,7 @@ attribute_deprecated
 int av_fifo_generic_peek(AVFifoBuffer *f, void *dest, int buf_size, void (*func)(void*, void*, int));
 
 /**
- * Feed data from an AVFifoBuffer to a user-supplied callback.
+ * Feed data from an AVFifoBuffer to a user-supplied videoCallback.
  * @param f AVFifoBuffer to read from
  * @param buf_size number of bytes to read
  * @param func generic read function
@@ -359,7 +359,7 @@ attribute_deprecated
 int av_fifo_generic_read(AVFifoBuffer *f, void *dest, int buf_size, void (*func)(void*, void*, int));
 
 /**
- * Feed data from a user-supplied callback to an AVFifoBuffer.
+ * Feed data from a user-supplied videoCallback to an AVFifoBuffer.
  * @param f AVFifoBuffer to write to
  * @param src data source; non-const since it may be used as a
  * modifiable codecContext by the function defined in func

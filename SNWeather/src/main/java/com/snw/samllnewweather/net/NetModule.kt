@@ -2,6 +2,7 @@ package com.snw.samllnewweather.net
 
 import android.util.Log
 import com.coder.vincent.sharp_retrofit.call_adapter.flow.FlowCallAdapterFactory
+import com.snw.samllnewweather.jni.JNIHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,7 +58,7 @@ object NetModule {
                 if (METHOD_GET.equals(request.method)) {
 //                    appid=21563178&appsecret=xyYGxRA4
                     //测试账号：appid=43656176&appsecret=I42og6Lm
-                    urlBuilder.addEncodedQueryParameter("key", "dc418e957f504a0ea777f9e91ae88329")
+                    urlBuilder.addEncodedQueryParameter("key", JNIHelper.getPrivateKey())
                     val httpUrl = urlBuilder.build()
                     requestBuilder.url(httpUrl);
                 }

@@ -14,9 +14,12 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Chapter2" />
             <option value="$PROJECT_DIR$/SNWeather" />
+            <option value="$PROJECT_DIR$/databindingdemo" />
             <option value="$PROJECT_DIR$/ffmpegdemo" />
             <option value="$PROJECT_DIR$/flowdemo" />
             <option value="$PROJECT_DIR$/officialtutorial" />
+            <option value="$PROJECT_DIR$/rtmpdemo" />
+            <option value="$PROJECT_DIR$/viewbindingdemo" />
           </set>
         </option>
       </GradleProjectSettings>

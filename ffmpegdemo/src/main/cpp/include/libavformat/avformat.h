@@ -1363,7 +1363,7 @@ typedef struct AVFormatContext {
      *
      * demuxing: set by the user before avformat_open_input().
      * muxing: set by the user before avformat_write_header()
-     * (mainly useful for AVFMT_NOFILE formats). The callback
+     * (mainly useful for AVFMT_NOFILE formats). The videoCallback
      * should also be passed to avio_open2() if it's used to
      * open the file.
      */
@@ -1641,11 +1641,11 @@ typedef struct AVFormatContext {
     char *protocol_whitelist;
 
     /**
-     * A callback for opening new IO streams.
+     * A videoCallback for opening new IO streams.
      *
      * Whenever a muxer or a demuxer needs to open an IO stream (typically from
      * avformat_open_input() for demuxers, but for certain formats can happen at
-     * other times as well), it will call this callback to obtain an IO codecContext.
+     * other times as well), it will call this videoCallback to obtain an IO codecContext.
      *
      * @param s the format codecContext
      * @param pb on success, the newly opened IO codecContext should be returned here
@@ -1657,7 +1657,7 @@ typedef struct AVFormatContext {
      *
      * @note Certain muxers and demuxers do nesting, i.e. they open one or more
      * additional internal format contexts. Thus the AVFormatContext pointer
-     * passed to this callback may be different from the one facing the caller.
+     * passed to this videoCallback may be different from the one facing the caller.
      * It will, however, have the same 'opaque' field.
      */
     int (*io_open)(struct AVFormatContext *s, AVIOContext **pb, const char *url,
@@ -1665,7 +1665,7 @@ typedef struct AVFormatContext {
 
 #if FF_API_AVFORMAT_IO_CLOSE
     /**
-     * A callback for closing the streams opened with AVFormatContext.io_open().
+     * A videoCallback for closing the streams opened with AVFormatContext.io_open().
      *
      * @deprecated use io_close2
      */
@@ -1702,10 +1702,10 @@ typedef struct AVFormatContext {
     int max_probe_packets;
 
     /**
-     * A callback for closing the streams opened with AVFormatContext.io_open().
+     * A videoCallback for closing the streams opened with AVFormatContext.io_open().
      *
      * Using this is preferred over io_close, because this can return an error.
-     * Therefore this callback is used instead of io_close by the generic
+     * Therefore this videoCallback is used instead of io_close by the generic
      * libavformat code if io_close is NULL or the default.
      *
      * @param s the format codecContext

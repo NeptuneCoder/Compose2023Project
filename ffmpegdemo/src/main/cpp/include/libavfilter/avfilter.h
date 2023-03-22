@@ -136,15 +136,15 @@ enum AVMediaType avfilter_pad_get_type(const AVFilterPad *pads, int pad_idx);
  * to enable or disable a filter in the timeline. Filters supporting this
  * option have this flag set. When the enable expression is false, the default
  * no-op filter_frame() function is called in place of the filter_frame()
- * callback defined on each input pad, thus the frame is passed unchanged to
+ * videoCallback defined on each input pad, thus the frame is passed unchanged to
  * the next filters.
  */
 #define AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC  (1 << 16)
 /**
  * Same as AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC, except that the filter will
- * have its filter_frame() callback(s) called as usual even when the enable
+ * have its filter_frame() videoCallback(s) called as usual even when the enable
  * expression is false. The filter will disable filtering within the
- * filter_frame() callback(s) itself, for example executing code depending on
+ * filter_frame() videoCallback(s) itself, for example executing code depending on
  * the AVFilterContext->is_disabled value.
  */
 #define AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL (1 << 17)
@@ -156,7 +156,7 @@ enum AVMediaType avfilter_pad_get_type(const AVFilterPad *pads, int pad_idx);
 
 /**
  * Filter definition. This defines the pads a filter contains, and all the
- * callback functions used to interact with the filter.
+ * videoCallback functions used to interact with the filter.
  */
 typedef struct AVFilter {
     /**
@@ -231,10 +231,10 @@ typedef struct AVFilter {
     /**
      * Filter pre-initialization function
      *
-     * This callback will be called immediately after the filter codecContext is
+     * This videoCallback will be called immediately after the filter codecContext is
      * allocated, to allow allocating and initing sub-objects.
      *
-     * If this callback is not NULL, the uninit callback will be called on
+     * If this videoCallback is not NULL, the uninit videoCallback will be called on
      * allocation failure.
      *
      * @return 0 on success,
@@ -246,20 +246,20 @@ typedef struct AVFilter {
     /**
      * Filter initialization function.
      *
-     * This callback will be called only once during the filter lifetime, after
+     * This videoCallback will be called only once during the filter lifetime, after
      * all the options have been set, but before links between filters are
      * established and format negotiation is done.
      *
      * Basic filter initialization should be done here. Filters with dynamic
      * inputs and/or outputs should create those inputs/outputs here based on
      * provided options. No more changes to this filter's inputs/outputs can be
-     * done after this callback.
+     * done after this videoCallback.
      *
-     * This callback must not assume that the filter links exist or frame
+     * This videoCallback must not assume that the filter links exist or frame
      * parameters are known.
      *
      * @ref AVFilter.uninit "uninit" is guaranteed to be called even if
-     * initialization fails, so this callback does not have to clean up on
+     * initialization fails, so this videoCallback does not have to clean up on
      * failure.
      *
      * @return 0 on success, a negative AVERROR on failure
@@ -273,7 +273,7 @@ typedef struct AVFilter {
      * memory held by the filter, release any buffer references, etc. It does
      * not need to deallocate the AVFilterContext.priv memory itself.
      *
-     * This callback may be called even if @ref AVFilter.init "init" was not
+     * This videoCallback may be called even if @ref AVFilter.init "init" was not
      * called or failed, so it must be prepared to handle such a situation.
      */
     void (*uninit)(AVFilterContext *ctx);
@@ -286,11 +286,11 @@ typedef struct AVFilter {
         /**
          * Query formats supported by the filter on its inputs and outputs.
          *
-         * This callback is called after the filter is initialized (so the inputs
+         * This videoCallback is called after the filter is initialized (so the inputs
          * and outputs are fixed), shortly before the format negotiation. This
-         * callback may be called more than once.
+         * videoCallback may be called more than once.
          *
-         * This callback must set ::AVFilterLink's
+         * This videoCallback must set ::AVFilterLink's
          * @ref AVFilterFormatsConfig.formats "outcfg.formats"
          * on every input link and
          * @ref AVFilterFormatsConfig.formats "incfg.formats"
@@ -305,7 +305,7 @@ typedef struct AVFilter {
          * @ref AVFilterFormatsConfig.channel_layouts "outcfg.channel_layouts"
          * analogously.
          *
-         * This callback must never be NULL if the union is in this state.
+         * This videoCallback must never be NULL if the union is in this state.
          *
          * @return zero on success, a negative value corresponding to an
          * AVERROR code otherwise
@@ -824,7 +824,7 @@ const AVClass *avfilter_get_class(void);
 typedef struct AVFilterGraphInternal AVFilterGraphInternal;
 
 /**
- * A function pointer passed to the @ref AVFilterGraph.execute callback to be
+ * A function pointer passed to the @ref AVFilterGraph.execute videoCallback to be
  * executed multiple times, possibly in parallel.
  *
  * @param ctx the filter codecContext the job belongs to
@@ -893,11 +893,11 @@ typedef struct AVFilterGraph {
     void *opaque;
 
     /**
-     * This callback may be set by the caller immediately after allocating the
+     * This videoCallback may be set by the caller immediately after allocating the
      * graph and before adding any filters to it, to provide a custom
      * multithreading implementation.
      *
-     * If set, filters with slice threading capability will call this callback
+     * If set, filters with slice threading capability will call this videoCallback
      * to execute multiple jobs in parallel.
      *
      * If this field is left unset, libavfilter will use its internal

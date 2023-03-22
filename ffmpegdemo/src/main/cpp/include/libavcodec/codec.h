@@ -39,7 +39,7 @@
  */
 
 /**
- * Decoder can use draw_horiz_band callback.
+ * Decoder can use draw_horiz_band videoCallback.
  */
 #define AV_CODEC_CAP_DRAW_HORIZ_BAND     (1 <<  0)
 /**
@@ -309,7 +309,7 @@ enum {
      *
      * When selecting this format for a decoder,
      * AVCodecContext.hw_frames_ctx should be set to a suitable frames
-     * codecContext inside the get_format() callback.  The frames codecContext
+     * codecContext inside the get_format() videoCallback.  The frames codecContext
      * must have been created on a device of the specified type.
      *
      * When selecting this format for an encoder,

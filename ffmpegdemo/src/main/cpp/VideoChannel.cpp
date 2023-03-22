@@ -10,7 +10,8 @@ extern "C" {
 #include "libavutil/imgutils.h"
 }
 
-VideoChannel::VideoChannel(int index, AVCodecContext *context) : BaseChannel(index, context) {
+VideoChannel::VideoChannel(int index, AVCodecContext *context, AVRational rational)//
+        : BaseChannel(index, context, rational) {
 
 };
 
@@ -23,7 +24,7 @@ void *task_decode(void *args) {
 
 void *task_render(void *args) {
     VideoChannel *channel = static_cast<VideoChannel *>(args);
-    channel->render();
+    channel->_render();
     return 0;
 }
 
@@ -71,8 +72,14 @@ void VideoChannel::decode() {
 
 }
 
+void VideoChannel::stop() {
+    isPlaying = 0;
+    avFrames.setWork(0);
+    packets.setWork(0);
 
-void VideoChannel::render() {
+}
+
+void VideoChannel::_render() {
     //目标： RGBA
     swsContext = sws_getContext(
             codecContext->width, codecContext->height, codecContext->pix_fmt,
@@ -96,15 +103,21 @@ void VideoChannel::render() {
                   dst_data,
                   dst_linesize);
         //回调出去进行播放
-        callback(dst_data[0], dst_linesize[0], codecContext->width, codecContext->height);
+        videoCallback(dst_data[0], dst_linesize[0], codecContext->width, codecContext->height);
         releaseAvFrame(&frame);
     }
     av_freep(&dst_data[0]);
     releaseAvFrame(&frame);
+//    sws_freeContext(swsContext);
+//    swsContext = 0;
 };
 
 void VideoChannel::setRenderFrameCallback(RenderFrameCallback callback) {
-    this->callback = callback;
+    this->videoCallback = callback;
+}
+
+void VideoChannel::setAudioChannel(AudioChannel *audioChannel) {
+    this->audioChannel = audioChannel;
 }
 
 VideoChannel::~VideoChannel() {

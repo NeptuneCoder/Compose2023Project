@@ -15,15 +15,19 @@ extern "C" {
 
 class BaseChannel {
 public:
-    BaseChannel(int index, AVCodecContext *context);
+    BaseChannel(int index, AVCodecContext *context, AVRational rational);
 
 
     virtual ~BaseChannel();
+
+    virtual void stop();
 
 
     static void releaseAvPacket(AVPacket **avPacket);
 
     static void releaseAvFrame(AVFrame **avFrame);
+
+    virtual void pause();
 
 
 public:
@@ -33,7 +37,7 @@ public:
     AVCodecContext *codecContext;
 
     int isPlaying = 0;
-
+    AVRational rational;
 
 
 };

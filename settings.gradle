@@ -20,3 +20,6 @@ include ':officialtutorial'
 include ':flowdemo'
 
 include ':ffmpegdemo'
+include ':rtmpdemo'
+include ':viewbindingdemo'
+include ':databindingdemo'

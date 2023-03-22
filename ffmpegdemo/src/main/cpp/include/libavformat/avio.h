@@ -48,8 +48,8 @@
 /**
  * Callback for checking whether to abort blocking functions.
  * AVERROR_EXIT is returned in this case by the interrupted
- * function. During blocking operations, callback is called with
- * opaque as parameter. If the callback returns 1, the
+ * function. During blocking operations, videoCallback is called with
+ * opaque as parameter. If the videoCallback returns 1, the
  * blocking operation will be aborted.
  *
  * No members can be added to this struct without a major bump, if
@@ -111,7 +111,7 @@ typedef struct AVIODirContext AVIODirContext;
 
 /**
  * Different data types that can be returned via the AVIO
- * write_data_type callback.
+ * write_data_type videoCallback.
  */
 enum AVIODataMarkerType {
     /**
@@ -284,14 +284,14 @@ typedef struct AVIOContext {
     const char *protocol_blacklist;
 
     /**
-     * A callback that is used instead of write_packet.
+     * A videoCallback that is used instead of write_packet.
      */
     int (*write_data_type)(void *opaque, uint8_t *buf, int buf_size,
                            enum AVIODataMarkerType type, int64_t time);
     /**
      * If set, don't call write_data_type separately for AVIO_DATA_MARKER_BOUNDARY_POINT,
      * but ignore them and treat them as AVIO_DATA_MARKER_UNKNOWN (to avoid needlessly
-     * small chunks of data returned from the callback).
+     * small chunks of data returned from the videoCallback).
      */
     int ignore_boundary_point;
 
@@ -676,7 +676,7 @@ int avio_open(AVIOContext **s, const char *url, int flags);
  * @param url resource to access
  * @param flags flags which control how the resource indicated by url
  * is to be opened
- * @param int_cb an interrupt callback to be used at the protocols level
+ * @param int_cb an interrupt videoCallback to be used at the protocols level
  * @param options  A dictionary filled with protocol-private options. On return
  * this parameter will be destroyed and replaced with a dict containing options
  * that were not found. May be NULL.

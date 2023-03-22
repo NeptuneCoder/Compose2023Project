@@ -5,7 +5,8 @@
 #include "macro.h"
 
 
-AudioChannel::AudioChannel(int index, AVCodecContext *context) : BaseChannel(index, context) {
+AudioChannel::AudioChannel(int index, AVCodecContext *context, AVRational rational) : BaseChannel(
+        index, context, rational) {
     //44100 * 2 因为采用的时16为采样位
     //44100 * 2 * 2 ：表示双声道
     out_simple_rate = 44100;
@@ -118,6 +119,7 @@ void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
         (*bq)->Enqueue(bq, audioChannel->data, dataSize);
     }
 }
+
 
 void AudioChannel::playAudio() {
 //
@@ -238,6 +240,7 @@ void AudioChannel::playAudio() {
     }
     // 1.2 初始化引擎  init
     result = (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
+
     if (SL_RESULT_SUCCESS != result) {
         return;
     }
@@ -342,5 +345,55 @@ void AudioChannel::play() {
     swr_init(swrContext);
     pthread_create(&decode_audio_pid, 0, task_decode_audio, this);
     pthread_create(&play_audio_pid, 0, task_play_audio, this);
+
+}
+
+void AudioChannel::stop() {
+    isPlaying = 0;
+    avFrames.setWork(0);
+    avFrames.setReleaseCallback(releaseAvFrame);
+    packets.setReleaseCallback(releaseAvPacket);
+
+    packets.setWork(0);
+    pthread_join(decode_audio_pid, 0);
+    pthread_join(play_audio_pid, 0);
+
+    if (codecContext) {
+        av_free(codecContext);
+    }
+    if (swrContext) {
+        av_free(swrContext);
+        swrContext = 0;
+    }
+    //TODO 参考ndk-simple提供的demo进行释放：https://github.com/android/ndk-samples/blob/main/native-audio/app/src/main/cpp/native-audio-jni.c
+    /**
+     * LObjectItf engineObject = 0;
+    SLEngineItf engineInterface = 0;
+    SLObjectItf outputMixObject = 0;//混音器
+    SLEnvironmentalReverbSettings reverbSettings;
+    SLEnvironmentalReverbItf outputMixEnvironmentalReverb = 0;
+    SLObjectItf bqPlayerObject = 0;
+    SLPlayItf bqPlayerInterface = 0;
+    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueueInterface = 0;
+    SwrContext *swrContext = 0;
+
+    uint8_t *data = 0;
+     */
+    if (bqPlayerObject) {
+        (*bqPlayerObject)->Destroy(bqPlayerObject);
+        bqPlayerObject = 0;
+        bqPlayerInterface = 0;
+        bqPlayerBufferQueueInterface = 0;
+    }
+    if (outputMixObject) {
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = 0;
+    }
+    if (engineObject) {
+        (*engineObject)->Destroy(engineObject);
+        engineObject = 0;
+        engineInterface = 0;
+    }
+
 
 }

@@ -16,7 +16,7 @@ extern "C" {
 class AudioChannel : public BaseChannel {
 public:
 
-    AudioChannel(int index, AVCodecContext *context);
+    AudioChannel(int index, AVCodecContext *context, AVRational rational);
 
     ~AudioChannel();
 
@@ -28,6 +28,9 @@ public:
     void decodeAudio();
 
     int getPcm();
+
+    void stop();
+    void pause();
 
 public:
     pthread_t decode_audio_pid;

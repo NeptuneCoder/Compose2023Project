@@ -645,7 +645,7 @@ typedef struct AVCodecContext {
      * in order.
      * The function is also used by hardware acceleration APIs.
      * It is called at least once during frame decoding to pass
-     * the data needed for hardware render.
+     * the data needed for hardware _render.
      * In that mode instead of pixel data, AVFrame points to
      * a structure specific to the acceleration API. The application
      * reads the structure and can change some fields to indicate progress
@@ -671,18 +671,18 @@ typedef struct AVCodecContext {
      * formats alongside the "software" one. The software pixel format may also
      * be retrieved from \ref sw_pix_fmt.
      *
-     * This callback will be called when the coded frame properties (such as
+     * This videoCallback will be called when the coded frame properties (such as
      * resolution, pixel format, etc.) change and more than one output format is
      * supported for those new properties. If a hardware pixel format is chosen
-     * and initialization for it fails, the callback may be called again
+     * and initialization for it fails, the videoCallback may be called again
      * immediately.
      *
-     * This callback may be called from different threads if the decoder is
+     * This videoCallback may be called from different threads if the decoder is
      * multi-threaded, but not from more than one thread simultaneously.
      *
      * @param fmt list of formats which may be used in the current
      *            configuration, terminated by AV_PIX_FMT_NONE.
-     * @warning Behavior is undefined if the callback returns a value other
+     * @warning Behavior is undefined if the videoCallback returns a value other
      *          than one of the formats in fmt or AV_PIX_FMT_NONE.
      * @return the chosen format or AV_PIX_FMT_NONE
      */
@@ -1129,28 +1129,28 @@ typedef struct AVCodecContext {
     enum AVSampleFormat request_sample_fmt;
 
     /**
-     * This callback is called at the beginning of each frame to get data
+     * This videoCallback is called at the beginning of each frame to get data
      * buffer(s) for it. There may be one contiguous buffer for all the data or
      * there may be a buffer per each data plane or anything in between. What
      * this means is, you may set however many entries in buf[] you feel necessary.
      * Each buffer must be reference-counted using the AVBuffer API (see description
      * of buf[] below).
      *
-     * The following fields will be set in the frame before this callback is
+     * The following fields will be set in the frame before this videoCallback is
      * called:
      * - format
      * - width, height (video only)
      * - sample_rate, channel_layout, nb_samples (audio only)
      * Their values may differ from the corresponding values in
-     * AVCodecContext. This callback must use the frame values, not the codec
+     * AVCodecContext. This videoCallback must use the frame values, not the codec
      * codecContext values, to calculate the required buffer size.
      *
-     * This callback must fill the following fields in the frame:
+     * This videoCallback must fill the following fields in the frame:
      * - data[]
      * - linesize[]
      * - extended_data:
      *   * if the data is planar audio with more than 8 channels, then this
-     *     callback must allocate and fill extended_data to contain all pointers
+     *     videoCallback must allocate and fill extended_data to contain all pointers
      *     to all data planes. data[] must hold as many pointers as it can.
      *     extended_data must be allocated with av_malloc() and will be freed in
      *     av_frame_unref().
@@ -1161,7 +1161,7 @@ typedef struct AVCodecContext {
      *   AVBufferRef per data[] entry. See: av_buffer_create(), av_buffer_alloc(),
      *   and av_buffer_ref().
      * - extended_buf and nb_extended_buf must be allocated with av_malloc() by
-     *   this callback and filled with the extra buffers if there are more
+     *   this videoCallback and filled with the extra buffers if there are more
      *   buffers than buf[] can hold. extended_buf will be freed in
      *   av_frame_unref().
      *
@@ -1184,7 +1184,7 @@ typedef struct AVCodecContext {
      *
      * Some decoders do not support linesizes changing between frames.
      *
-     * If frame multithreading is used, this callback may be called from a
+     * If frame multithreading is used, this videoCallback may be called from a
      * different thread, but not from more than one at once. Does not need to be
      * reentrant.
      *
@@ -1426,7 +1426,7 @@ typedef struct AVCodecContext {
      *
      * - encoding: May be set by the caller before avcodec_open2(). Must remain
      *             valid until avcodec_free_context().
-     * - decoding: May be set by the caller in the get_format() callback.
+     * - decoding: May be set by the caller in the get_format() videoCallback.
      *             Must remain valid until the next get_format() call,
      *             or avcodec_free_context() (whichever comes first).
      */
@@ -1881,7 +1881,7 @@ typedef struct AVCodecContext {
      * the caller after being set.
      *
      * - decoding: This field should be set by the caller from the get_format()
-     *             callback. The previous reference (if any) will always be
+     *             videoCallback. The previous reference (if any) will always be
      *             unreffed by libavcodec before the get_format() call.
      *
      *             If the default get_buffer2() is used with a hwaccel pixel
@@ -1944,7 +1944,7 @@ typedef struct AVCodecContext {
      * decoding (if active).
      * - encoding: unused
      * - decoding: Set by user (either before avcodec_open2(), or in the
-     *             AVCodecContext.get_format callback)
+     *             AVCodecContext.get_format videoCallback)
      */
     int hwaccel_flags;
 
@@ -2016,20 +2016,20 @@ typedef struct AVCodecContext {
     int export_side_data;
 
     /**
-     * This callback is called at the beginning of each packet to get a data
+     * This videoCallback is called at the beginning of each packet to get a data
      * buffer for it.
      *
-     * The following field will be set in the packet before this callback is
+     * The following field will be set in the packet before this videoCallback is
      * called:
      * - size
-     * This callback must use the above value to calculate the required buffer size,
+     * This videoCallback must use the above value to calculate the required buffer size,
      * which must padded by at least AV_INPUT_BUFFER_PADDING_SIZE bytes.
      *
      * In some specific cases, the encoder may not use the entire buffer allocated by this
-     * callback. This will be reflected in the size value in the packet once returned by
+     * videoCallback. This will be reflected in the size value in the packet once returned by
      * avcodec_receive_packet().
      *
-     * This callback must fill the following fields in the packet:
+     * This videoCallback must fill the following fields in the packet:
      * - data: alignment requirements for AVPacket apply, if any. Some architectures and
      *   encoders may benefit from having aligned data.
      * - buf: must contain a pointer to an AVBufferRef structure. The packet's
@@ -2043,11 +2043,11 @@ typedef struct AVCodecContext {
      * The flags field may contain a combination of AV_GET_ENCODE_BUFFER_FLAG_ flags.
      * They may be used for example to hint what use the buffer may get after being
      * created.
-     * Implementations of this callback may ignore flags they don't understand.
+     * Implementations of this videoCallback may ignore flags they don't understand.
      * If AV_GET_ENCODE_BUFFER_FLAG_REF is set in flags then the packet may be reused
      * (read and/or written to if it is writable) later by libavcodec.
      *
-     * This callback must be thread-safe, as when frame threading is used, it may
+     * This videoCallback must be thread-safe, as when frame threading is used, it may
      * be called from multiple threads simultaneously.
      *
      * @see avcodec_default_get_encode_buffer()
@@ -2490,14 +2490,14 @@ void avsubtitle_free(AVSubtitle *sub);
  */
 
 /**
- * The default callback for AVCodecContext.get_buffer2(). It is made public so
+ * The default videoCallback for AVCodecContext.get_buffer2(). It is made public so
  * it can be called by custom get_buffer2() implementations for decoders without
  * AV_CODEC_CAP_DR1 set.
  */
 int avcodec_default_get_buffer2(AVCodecContext *s, AVFrame *frame, int flags);
 
 /**
- * The default callback for AVCodecContext.get_encode_buffer(). It is made public so
+ * The default videoCallback for AVCodecContext.get_encode_buffer(). It is made public so
  * it can be called by custom get_encode_buffer() implementations for encoders without
  * AV_CODEC_CAP_DR1 set.
  */
@@ -2707,7 +2707,7 @@ int avcodec_receive_packet(AVCodecContext *avctx, AVPacket *avpkt);
 
 /**
  * Create and return a AVHWFramesContext with values adequate for hardware
- * decoding. This is meant to get called from the get_format callback, and is
+ * decoding. This is meant to get called from the get_format videoCallback, and is
  * a helper for preparing a AVHWFramesContext for AVCodecContext.hw_frames_ctx.
  * This API is for decoding with certain hardware acceleration modes/APIs only.
  *
@@ -2731,7 +2731,7 @@ int avcodec_receive_packet(AVCodecContext *avctx, AVPacket *avpkt);
  *   Even if this function returns successfully, hwaccel initialization could
  *   fail later. (The degree to which implementations check whether the stream
  *   is actually supported varies. Some do this check only after the user's
- *   get_format callback returns.)
+ *   get_format videoCallback returns.)
  * - The hw_pix_fmt must be one of the choices suggested by get_format. If the
  *   user decides to use a AVHWFramesContext prepared with this API function,
  *   the user must return the same hw_pix_fmt from get_format.
@@ -2752,9 +2752,9 @@ int avcodec_receive_packet(AVCodecContext *avctx, AVPacket *avpkt);
  * - Fields that use dynamically allocated values of any kind must not be set
  *   by the user unless setting them is explicitly allowed by the documentation.
  *   If the user sets AVHWFramesContext.free and AVHWFramesContext.user_opaque,
- *   the new free callback must call the potentially set previous free callback.
+ *   the new free videoCallback must call the potentially set previous free videoCallback.
  *   This API call may set any dynamically allocated fields, including the free
- *   callback.
+ *   videoCallback.
  *
  * The function will set at least the following fields on AVHWFramesContext
  * (potentially more, depending on hwaccel API):
@@ -2984,7 +2984,7 @@ typedef struct AVCodecParser {
     int codec_ids[7]; /* several codec IDs are permitted */
     int priv_data_size;
     int (*parser_init)(AVCodecParserContext *s);
-    /* This callback never returns an error, a negative value means that
+    /* This videoCallback never returns an error, a negative value means that
      * the frame start was in a previous packet. */
     int (*parser_parse)(AVCodecParserContext *s,
                         AVCodecContext *avctx,

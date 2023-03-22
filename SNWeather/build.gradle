@@ -10,7 +10,7 @@ plugins {
 android {
     namespace 'com.snw.samllnewweather'
     compileSdk 33
-
+    ndkVersion "20.0.5594570"
     defaultConfig {
         applicationId "com.snw.samllnewweather"
         minSdk 24
@@ -22,8 +22,16 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ''
+                abiFilters 'armeabi-v7a'
+            }
+        }
+
         ndk {
-            abiFilters "armeabi-v7a"
+            abiFilters 'armeabi-v7a'
         }
 
     }
@@ -67,6 +75,13 @@ android {
     sourceSets {
         main {
             jniLibs.srcDirs = ['libs']
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            //src/main/cpp/CMakeLists.txt
+            path file('src/main/cpp/CMakeLists.txt')
+            version '3.22.1'
         }
     }
 }

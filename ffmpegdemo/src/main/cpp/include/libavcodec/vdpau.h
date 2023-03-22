@@ -86,7 +86,7 @@ typedef struct AVVDPAUContext {
     VdpDecoder decoder;
 
     /**
-     * VDPAU decoder render callback
+     * VDPAU decoder _render videoCallback
      *
      * Set by the user.
      */
@@ -107,7 +107,7 @@ void av_vdpau_hwaccel_set_render2(AVVDPAUContext *, AVVDPAU_Render2);
 
 /**
  * Associate a VDPAU device with a codec codecContext for hardware acceleration.
- * This function is meant to be called from the get_format() codec callback,
+ * This function is meant to be called from the get_format() codec videoCallback,
  * or earlier. It can also be called after avcodec_flush_buffers() to change
  * the underlying VDPAU device mid-stream (e.g. to recover from non-transparent
  * display preemption).
@@ -115,7 +115,7 @@ void av_vdpau_hwaccel_set_render2(AVVDPAUContext *, AVVDPAU_Render2);
  * @note get_format() must return AV_PIX_FMT_VDPAU if this function completes
  * successfully.
  *
- * @param avctx decoding codecContext whose get_format() callback is invoked
+ * @param avctx decoding codecContext whose get_format() videoCallback is invoked
  * @param device VDPAU device handle to use for hardware acceleration
  * @param get_proc_address VDPAU device driver
  * @param flags zero of more OR'd AV_HWACCEL_FLAG_* flags
