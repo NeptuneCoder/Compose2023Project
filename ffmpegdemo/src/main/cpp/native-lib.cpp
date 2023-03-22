@@ -11,6 +11,7 @@ extern "C" {
 #include "android/native_window_jni.h"
 #include <string>
 
+#include "macro.h"
 
 extern "C"
 JNIEXPORT jstring JNICALL
@@ -25,7 +26,7 @@ JNIEXPORT void JNICALL
 Java_com_example_ffmpegdemo_DNPlayer_newFun(JNIEnv *env, jobject thiz, jintArray array,
                                             jobjectArray strArray) {
     jsize size = env->GetArrayLength(strArray);
-    LOG("测试内容 = %d\n", size);
+    LOGE("测试内容 = %d\n", size);
     for (int i = 0; i < size; ++i) {
         //强转为jstring类型
         jstring str = static_cast<jstring>(env->GetObjectArrayElement(strArray, i));

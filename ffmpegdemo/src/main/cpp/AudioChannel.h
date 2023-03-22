@@ -1,13 +1,14 @@
 //
-// Created by yanghai on 2023/3/11.
+// Created by Administrator on 2018/9/5.
 //
 
-#ifndef COMPOSE2023PROJECT_AUDIOCHANNEL_H
-#define COMPOSE2023PROJECT_AUDIOCHANNEL_H
+#ifndef PLAYER_AUDIOCHANNEL_H
+#define PLAYER_AUDIOCHANNEL_H
 
+
+#include "BaseChannel.h"
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
-#include "BaseChannel.h"
 
 extern "C" {
 #include <libswresample/swresample.h>
@@ -15,40 +16,51 @@ extern "C" {
 
 class AudioChannel : public BaseChannel {
 public:
-
-    AudioChannel(int index, AVCodecContext *context, AVRational rational);
+    AudioChannel(int id, AVCodecContext *avCodecContext, AVRational time_base);
 
     ~AudioChannel();
 
-    //创建两个线程，一个用来解码，一个用来播放
     void play();
 
-    void playAudio();
+    void stop();
 
-    void decodeAudio();
+    void decode();
+
+    void _play();
 
     int getPcm();
 
-    void stop();
-    void pause();
-
 public:
-    pthread_t decode_audio_pid;
-    pthread_t play_audio_pid;
+    uint8_t *data = 0;
+    int out_channels;
+    int out_samplesize;
+    int out_sample_rate;
+private:
+    pthread_t pid_audio_decode;
+    pthread_t pid_audio_play;
+
+
+    /**
+     * OpenSL ES
+     */
+    // 引擎与引擎接口
     SLObjectItf engineObject = 0;
     SLEngineItf engineInterface = 0;
-    SLObjectItf outputMixObject = 0;//混音器
-    SLEnvironmentalReverbSettings reverbSettings;
-    SLEnvironmentalReverbItf outputMixEnvironmentalReverb = 0;
+    //混音器
+    SLObjectItf outputMixObject = 0;
+    //播放器
     SLObjectItf bqPlayerObject = 0;
+    //播放器接口
     SLPlayItf bqPlayerInterface = 0;
+    //队列结构
     SLAndroidSimpleBufferQueueItf bqPlayerBufferQueueInterface = 0;
+
+
+    //重采样
     SwrContext *swrContext = 0;
 
-    uint8_t *data = 0;
-    int out_samplesize = 0;
-    int out_channels = 0;
-    int out_simple_rate = 0;
+
 };
 
-#endif //COMPOSE2023PROJECT_AUDIOCHANNEL_H
+
+#endif //PLAYER_AUDIOCHANNEL_H

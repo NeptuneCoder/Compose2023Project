@@ -1,203 +1,243 @@
 //
-// Created by yanghai on 2023/3/9.
+// Created by Administrator on 2018/9/5.
 //
 
-#include "DNFFmpeg.h"
+#include <cstring>
+#include <pthread.h>
 
-/**
- * 在线程中调用准流程
- * @return
- */
-void *task_prepare(void *args) {
-    DNFFmpeg *dnfFmpeg = static_cast<DNFFmpeg *>(args);
-    dnfFmpeg->_prepare();
-    LOGE("这里在准备");
-    return 0;//线程函数必须return
-    //打开一个直播地址
-    //AVFormatContext **ps 这就是一个视频信息相关的上下文
+extern "C" {
+#include <libavutil/time.h>
 }
 
-DNFFmpeg::DNFFmpeg(JavaCallHelper *javaCallHelper, const char *dataSource) {
-    this->dataSource = new char[strlen(dataSource) + 1];
-    //将dataSource拷贝给this->dataSource
-    strcpy(this->dataSource, dataSource);
-    this->javaCallHelper = javaCallHelper;
+#include "DNFFmpeg.h"
+#include "macro.h"
 
+
+void *task_prepare(void *args) {
+    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+    ffmpeg->_prepare();
+    return 0;
+}
+
+DNFFmpeg::DNFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
+    this->callHelper = callHelper;
+    //防止 dataSource参数 指向的内存被释放
+    //strlen 获得字符串的长度 不包括\0
+    this->dataSource = new char[strlen(dataSource) + 1];
+    strcpy(this->dataSource, dataSource);
+}
+
+DNFFmpeg::~DNFFmpeg() {
+    //释放
+    DELETE(dataSource);
 }
 
 
 void DNFFmpeg::prepare() {
+    //创建一个线程
     pthread_create(&pid, 0, task_prepare, this);
 }
 
-int ret = 0;
-
 void DNFFmpeg::_prepare() {
-    //需要网络初始化，不然ffmpeg不能联网
+    // 初始化网络 让ffmpeg能够使用网络
     avformat_network_init();
+    //1、打开媒体地址(文件地址、直播地址)
+    // AVFormatContext  包含了 视频的 信息(宽、高等)
+    //文件路径不对 手机没网
+    // 第3个参数： 指示打开的媒体格式(传NULL，ffmpeg就会自动推到出是mp4还是flv)
     AVDictionary *options = 0;
-    //设置连接超时为5s
+    //设置超时时间 微妙 超时时间5秒
     av_dict_set(&options, "timeout", "5000000", 0);
-    ret = avformat_open_input(&formatContext, dataSource, 0, &options);
+    int ret = avformat_open_input(&formatContext, dataSource, 0, &options);
     av_dict_free(&options);
-    if (ret != 0) {//===0表示成功
-        //反射调用
-        javaCallHelper->OnError(THREAD_CHILD, FFMPEG_CAN_NOT_OPEN_URL);
-        LOGE("这里在准备FFMPEG_CAN_NOT_OPEN_URL");
+    //ret不为0表示 打开媒体失败
+    if (ret != 0) {
+        LOGE("打开媒体失败:%s", av_err2str(ret));
+        if (isPlaying) {
+            callHelper->OnError(THREAD_CHILD, FFMPEG_CAN_NOT_OPEN_URL);
+        }
         return;
     }
-
-    //查找媒体中的音视频流
+    //2、查找媒体中的 音视频流 (给 contxt里的 streams等成员赋)
     ret = avformat_find_stream_info(formatContext, 0);
-    if (ret < 0) {//>=0 表示成功；< 0 表示失败
-        LOGE("这里在准备FFMPEG_CAN_NOT_FIND_STREAMS");
-        javaCallHelper->OnError(THREAD_CHILD, FFMPEG_CAN_NOT_FIND_STREAMS);
+    // 小于0 则失败
+    if (ret < 0) {
+        LOGE("查找流失败:%s", av_err2str(ret));
+        if (isPlaying) {
+            callHelper->OnError(THREAD_CHILD, FFMPEG_CAN_NOT_FIND_STREAMS);
+        }
         return;
     }
-
-    //通过找到的流打开编解码器;通过上面成功后avFormatContext->nb_streams就有值了。
-    //表示av_stream的个数；
-    // 什么是av_stream?一个视频里面包含的一个视频流，一个音频流；字幕一般也是一个流，但是一般和图形合在了一起。
-
+    //nb_streams :几个流(几段视频/音频)
     for (int i = 0; i < formatContext->nb_streams; ++i) {
         //可能代表是一个视频 也可能代表是一个音频
-        AVCodecParameters *codecpar = formatContext->streams[i]->codecpar;
         AVStream *stream = formatContext->streams[i];
         //包含了 解码 这段流 的各种参数信息(宽、高、码率、帧率)
-        AVRational avRational = formatContext->streams[i]->avg_frame_rate;
+        AVCodecParameters *codecpar = stream->codecpar;
+
         //无论视频还是音频都需要干的一些事情（获得解码器）
         // 1、通过 当前流 使用的 编码方式，查找解码器
         const AVCodec *dec = avcodec_find_decoder(codecpar->codec_id);
         if (dec == NULL) {
             LOGE("查找解码器失败:%s", av_err2str(ret));
-            javaCallHelper->OnError(THREAD_CHILD, FFMPEG_FIND_DECODER_FAIL);
+            if (isPlaying) {
+                callHelper->OnError(THREAD_CHILD, FFMPEG_FIND_DECODER_FAIL);
+            }
             return;
         }
         //2、获得解码器上下文
-        AVCodecContext *codecContext = avcodec_alloc_context3(dec);
-        if (codecContext == NULL) {
+        AVCodecContext *context = avcodec_alloc_context3(dec);
+        if (context == NULL) {
             LOGE("创建解码上下文失败:%s", av_err2str(ret));
-            javaCallHelper->OnError(THREAD_CHILD, FFMPEG_ALLOC_CODEC_CONTEXT_FAIL);
+            if (isPlaying) {
+                callHelper->OnError(THREAD_CHILD, FFMPEG_ALLOC_CODEC_CONTEXT_FAIL);
+            }
             return;
         }
-        //3、设置上下文内的一些参数 (codecContext->width)
-//        codecContext->width = codecpar->width;
-//        codecContext->height = codecpar->height;
-        ret = avcodec_parameters_to_context(codecContext, codecpar);
+        //3、设置上下文内的一些参数 (context->width)
+//        context->width = codecpar->width;
+//        context->height = codecpar->height;
+        ret = avcodec_parameters_to_context(context, codecpar);
         //失败
         if (ret < 0) {
             LOGE("设置解码上下文参数失败:%s", av_err2str(ret));
-            javaCallHelper->OnError(THREAD_CHILD, FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL);
+            if (isPlaying) {
+                callHelper->OnError(THREAD_CHILD, FFMPEG_CODEC_CONTEXT_PARAMETERS_FAIL);
+            }
             return;
         }
         // 4、打开解码器
-        ret = avcodec_open2(codecContext, dec, 0);
+        ret = avcodec_open2(context, dec, 0);
         if (ret != 0) {
             LOGE("打开解码器失败:%s", av_err2str(ret));
-            javaCallHelper->OnError(THREAD_CHILD, FFMPEG_OPEN_DECODER_FAIL);
+            if (isPlaying) {
+                callHelper->OnError(THREAD_CHILD, FFMPEG_OPEN_DECODER_FAIL);
+            }
             return;
         }
+        // 单位
+        AVRational time_base = stream->time_base;
         //音频
         if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             //0
-            audioChannel = new AudioChannel(i, codecContext, avRational);
-            if (videoChannel && audioChannel) {
-                videoChannel->setAudioChannel(audioChannel);
-            }
+            audioChannel = new AudioChannel(i, context, time_base);
         } else if (codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             //1
-            videoChannel = new VideoChannel(i, codecContext, avRational);
-            if (videoChannel && audioChannel) {
-                videoChannel->setAudioChannel(audioChannel);
-            }
+            //帧率： 单位时间内 需要显示多少个图像
+            AVRational frame_rate = stream->avg_frame_rate;
+            int fps = av_q2d(frame_rate);
+
+            videoChannel = new VideoChannel(i, context, time_base, fps);
             videoChannel->setRenderFrameCallback(callback);
         }
     }
-
-    if (videoChannel == 0 && audioChannel == 0) {
-        javaCallHelper->OnError(THREAD_CHILD, FFMPEG_NOMEDIA);
+    //没有音视频  (很少见)
+    if (!audioChannel && !videoChannel) {
+        LOGE("没有音视频");
+        callHelper->OnError(THREAD_CHILD, FFMPEG_NOMEDIA);
         return;
     }
-    LOGE("这里成功了");
-    //准备好了，开始回调java方法
-    javaCallHelper->onPrepase(THREAD_CHILD);
-}
+    // 准备完了 通知java 你随时可以开始播放
+    if (isPlaying) {
+        callHelper->onPrepase(THREAD_CHILD);
+    }
+};
 
-
-void *task_start_play(void *args) {
-    DNFFmpeg *dnfFmpeg = static_cast<DNFFmpeg * > (args);
-    dnfFmpeg->_start();
+void *play(void *args) {
+    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+    ffmpeg->_start();
     return 0;
 }
 
+
 void DNFFmpeg::start() {
-    //应该避免在主线程中执行
+    // 正在播放
     isPlaying = 1;
-    if (videoChannel) {
-        videoChannel->play();
-    }
+
+    //启动声音的解码与播放
     if (audioChannel) {
         audioChannel->play();
     }
-    pthread_create(&start_pid, 0, task_start_play, this);
+    if (videoChannel) {
+        videoChannel->setAudioChannel(audioChannel);
+        videoChannel->play();
+    }
+    pthread_create(&pid_play, 0, play, this);
 }
 
 /**
  * 专门读取数据包
  */
 void DNFFmpeg::_start() {
-    //1. 读取媒体数据包
-    //2. 解码
-    int ret = 0;
-    while (isPlaying) {//如果处于播放中，就一直读取视频流
-        AVPacket *avPacket = av_packet_alloc();//存放压缩后的数据
-        //这里能够修改指针avPacket的数据
-        ret = av_read_frame(formatContext, avPacket);
-        if (ret == 0) {//表示成功
-            //判断当前数据是音频还是视频？
-            if (audioChannel && audioChannel->index == avPacket->stream_index) {//表示视频
-                //将音频数据放到
-                audioChannel->packets.push(avPacket);
-            } else if (videoChannel && videoChannel->index == avPacket->stream_index) {
-                //将读取到的流放到队列中取
-                videoChannel->packets.push(avPacket);
+    //1、读取媒体数据包(音视频数据包)
+    int ret;
+    while (isPlaying) {
+        //读取文件的时候没有网络请求，一下子读完了，可能导致oom
+        //特别是读本地文件的时候 一下子就读完了
+        if (audioChannel && audioChannel->packets.size() > 100) {
+            //10ms
+            av_usleep(1000 * 10);
+            continue;
+        }
+        if (videoChannel && videoChannel->packets.size() > 100) {
+            av_usleep(1000 * 10);
+            continue;
+        }
+        AVPacket *packet = av_packet_alloc();
+        ret = av_read_frame(formatContext, packet);
+        //=0成功 其他:失败
+        if (ret == 0) {
+            //stream_index 这一个流的一个序号
+            if (audioChannel && packet->stream_index == audioChannel->id) {
+                audioChannel->packets.push(packet);
+            } else if (videoChannel && packet->stream_index == videoChannel->id) {
+                videoChannel->packets.push(packet);
             }
-        } else if (ret == AVERROR_EOF) {//end of file;读取完成还没有播放完成
-
+        } else if (ret == AVERROR_EOF) {
+            //读取完成 但是可能还没播放完
+            if (audioChannel->packets.empty() && audioChannel->frames.empty()
+                && videoChannel->packets.empty() && videoChannel->frames.empty()) {
+                break;
+            }
+            //为什么这里要让它继续循环 而不是sleep
+            //如果是做直播 ，可以sleep
+            //如果要支持点播(播放本地文件） seek 后退
+        } else {
+            //
+            break;
         }
     }
-}
+    isPlaying = 0;
+    audioChannel->stop();
+    videoChannel->stop();
+};
 
 void DNFFmpeg::setRenderFrameCallback(RenderFrameCallback callback) {
     this->callback = callback;
 }
 
+void *aync_stop(void *args) {
+    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+    //   等待prepare结束
+    pthread_join(ffmpeg->pid, 0);
+    // 保证 start线程结束
+    pthread_join(ffmpeg->pid_play, 0);
+    DELETE(ffmpeg->videoChannel);
+    DELETE(ffmpeg->audioChannel);
+    // 这时候释放就不会出现问题了
+    if (ffmpeg->formatContext) {
+        //先关闭读取 (关闭fileintputstream)
+        avformat_close_input(&ffmpeg->formatContext);
+        avformat_free_context(ffmpeg->formatContext);
+        ffmpeg->formatContext = 0;
+    }
+    DELETE(ffmpeg);
+    return 0;
+}
+
 void DNFFmpeg::stop() {
     isPlaying = 0;
-    if (audioChannel) {
-        audioChannel->stop();
-
-    }
-    if (videoChannel) {
-        videoChannel->stop();
-    }
-}
-
-
-DNFFmpeg::~DNFFmpeg() {
-    /**
-     * delete dataSource;
-       dataSource = 0;
-     */
-    DELETE(dataSource);
-    DELETE(javaCallHelper);
-    DELETE(formatContext);
-    DELETE(videoChannel);
-    DELETE(audioChannel);
-
-
-    pthread_t pid;
-    int isPlaying = 0;
-    pthread_t start_pid;
-    RenderFrameCallback callback;
-}
+    callHelper = 0;
+    // formatContext
+    pthread_create(&pid_stop, 0, aync_stop, this);
+};

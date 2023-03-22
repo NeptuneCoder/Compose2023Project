@@ -1,46 +1,51 @@
 //
-// Created by yanghai on 2023/3/11.
+// Created by Administrator on 2018/9/5.
 //
 
-#ifndef COMPOSE2023PROJECT_VIDEOCHANNEL_H
-#define COMPOSE2023PROJECT_VIDEOCHANNEL_H
+#ifndef PLAYER_VIDEOCHANNEL_H
+#define PLAYER_VIDEOCHANNEL_H
+
 
 #include "BaseChannel.h"
 #include "AudioChannel.h"
 
 extern "C" {
-#include "libswscale/swscale.h"
+#include <libswscale/swscale.h>
 };
 
+/**
+ * 1、解码
+ * 2、播放
+ */
 typedef void (*RenderFrameCallback)(uint8_t *, int, int, int);
 
 class VideoChannel : public BaseChannel {
 public:
-    VideoChannel(int index, AVCodecContext *context, AVRational rational);
+    VideoChannel(int id, AVCodecContext *avCodecContext, AVRational time_base, int fps);
 
     ~VideoChannel();
 
-    void play();
-
-    void decode();
-
-
-    void _render();
-
-    void setRenderFrameCallback(RenderFrameCallback callback);
-
     void setAudioChannel(AudioChannel *audioChannel);
+
+    //解码+播放
+    void play();
 
     void stop();
 
-public:
+    void decode();
+
+    void render();
+
+    void setRenderFrameCallback(RenderFrameCallback callback);
 
 private:
-    pthread_t decode_pid;
-    pthread_t render_pid;
-    SwsContext *swsContext;
-    RenderFrameCallback videoCallback;
-    AudioChannel *audioChannel;
+    pthread_t pid_decode;
+    pthread_t pid_render;
+    int fps;
+    SwsContext *swsContext = 0;
+    RenderFrameCallback callback;
+    AudioChannel *audioChannel = 0;
 };
 
-#endif //COMPOSE2023PROJECT_AUDIOCHANNEL_H
+
+#endif //PLAYER_VIDEOCHANNEL_H

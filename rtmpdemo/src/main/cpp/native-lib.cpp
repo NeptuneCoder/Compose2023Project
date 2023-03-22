@@ -132,7 +132,7 @@ Java_com_example_rtmpdemo_LivePusher_native_1pushVideo(JNIEnv *env, jobject thiz
         return;
     }
     jbyte *data = env->GetByteArrayElements(_data, 0);
-
+    LOGE("data === %d\n", data[0]);
     videoChannel->encodeData(data);
     env->ReleaseByteArrayElements(_data, data, 0);
 }
@@ -148,4 +148,5 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_rtmpdemo_LivePusher_native_1release(JNIEnv *env, jobject thiz) {
     // TODO: implement native_release()
+
 }

@@ -1,45 +1,76 @@
 //
-// Created by yanghai on 2023/3/13.
+// Created by Administrator on 2018/9/7.
 //
 
-#ifndef COMPOSE2023PROJECT_BASECHANNEL_H
-#define COMPOSE2023PROJECT_BASECHANNEL_H
+#ifndef PLAYER_BASECHANNEL_H
+#define PLAYER_BASECHANNEL_H
 
-extern "C" {
-
-#include "libavcodec/avcodec.h"
-}
 
 #include "SafeQueue.h"
 
+extern "C" {
+#include <libavcodec/avcodec.h>
+};
 
 class BaseChannel {
 public:
-    BaseChannel(int index, AVCodecContext *context, AVRational rational);
+    BaseChannel(int id, AVCodecContext *avCodecContext, AVRational time_base) : id(id),
+                                                                                avCodecContext(
+                                                                                        avCodecContext),
+                                                                                time_base(
+                                                                                        time_base) {
+        frames.setReleaseCallback(releaseAvFrame);
+        packets.setReleaseCallback(releaseAvPacket);
+    }
 
+    //virtual
+    virtual ~BaseChannel() {
+        frames.clear();
+        packets.clear();
+        if (avCodecContext) {
+            avcodec_close(avCodecContext);
+            avcodec_free_context(&avCodecContext);
+            avCodecContext = 0;
+        }
+    }
 
-    virtual ~BaseChannel();
+    /**
+     * 释放 AVPacket
+     * @param packet
+     */
+    static void releaseAvPacket(AVPacket **packet) {
+        if (packet) {
+            av_packet_free(packet);
+            //为什么用指针的指针？
+            // 指针的指针能够修改传递进来的指针的指向
+            *packet = 0;
+        }
+    }
 
-    virtual void stop();
+    static void releaseAvFrame(AVFrame **frame) {
+        if (frame) {
+            av_frame_free(frame);
+            //为什么用指针的指针？
+            // 指针的指针能够修改传递进来的指针的指向
+            *frame = 0;
+        }
+    }
 
+    //纯虚方法 相当于 抽象方法
+    virtual void play() = 0;
 
-    static void releaseAvPacket(AVPacket **avPacket);
+    virtual void stop() = 0;
 
-    static void releaseAvFrame(AVFrame **avFrame);
-
-    virtual void pause();
-
-
+    int id;
+    //编码数据包队列
+    SafeQueue<AVPacket *> packets;
+    //解码数据包队列
+    SafeQueue<AVFrame *> frames;
+    bool isPlaying;
+    AVCodecContext *avCodecContext;
+    AVRational time_base;
 public:
-    int index;
-    SafeQueue<AVPacket *> packets;//编码数据包队列
-    SafeQueue<AVFrame *> avFrames;//解码数据包队列
-    AVCodecContext *codecContext;
-
-    int isPlaying = 0;
-    AVRational rational;
-
-
+    double clock;
 };
 
-#endif //COMPOSE2023PROJECT_BASECHANNEL_H
+#endif //PLAYER_BASECHANNEL_H

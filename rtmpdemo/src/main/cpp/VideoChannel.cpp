@@ -6,8 +6,6 @@
 #include "VideoChannel.h"
 
 
-
-
 VideoChannel::VideoChannel() {
     pthread_mutex_init(&mutex, 0);
 };
