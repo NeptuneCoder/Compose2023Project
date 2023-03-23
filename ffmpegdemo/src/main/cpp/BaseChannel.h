@@ -1,5 +1,5 @@
 //
-// Created by Administrator on 2018/9/7.
+// Created by yanghai on 2023/3/10.
 //
 
 #ifndef PLAYER_BASECHANNEL_H

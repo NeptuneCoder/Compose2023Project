@@ -1,7 +1,7 @@
 
 #include "DNFFmpeg.h"
 
-#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "JNI", __VA_ARGS__);
+
 
 extern "C" {
 #include <libavcodec/avcodec.h>

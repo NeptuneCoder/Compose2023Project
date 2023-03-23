@@ -1,6 +1,5 @@
 /**
- * @author Lance
- * @date 2018/8/9
+// Created by yanghai on 2023/3/10.
  */
 
 #ifndef COMPOSE2023PROJECT_MACRO_H
@@ -10,7 +9,9 @@
 
 
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,"FFMPEG",__VA_ARGS__)
-
+#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "JNI", __VA_ARGS__);
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEFAULT, "JNI", __VA_ARGS__);
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "JNI", __VA_ARGS__);
 //宏函数
 #define DELETE(obj) if(obj){ delete obj; obj = 0; }
 
@@ -35,7 +36,6 @@
 #define FFMPEG_NOMEDIA 8
 
 #define FFMPEG_CODECPAR 9
-
 
 
 #endif //DNPLAYER_MACRO_H
