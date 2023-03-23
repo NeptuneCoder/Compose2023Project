@@ -2,8 +2,8 @@
 // Created by yanghai on 2023/3/10.
 //
 
-#ifndef PLAYER_AUDIOCHANNEL_H
-#define PLAYER_AUDIOCHANNEL_H
+#ifndef COMPOSE2023PROJECT_AUDIOCHANNEL_H
+#define COMPOSE2023PROJECT_AUDIOCHANNEL_H
 
 
 #include "BaseChannel.h"
@@ -63,4 +63,4 @@ private:
 };
 
 
-#endif //PLAYER_AUDIOCHANNEL_H
+#endif //COMPOSE2023PROJECT_AUDIOCHANNEL_H

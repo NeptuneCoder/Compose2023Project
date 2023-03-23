@@ -2,8 +2,8 @@
 // Created by yanghai on 2023/3/10.
 //
 
-#ifndef PLAYER_VIDEOCHANNEL_H
-#define PLAYER_VIDEOCHANNEL_H
+#ifndef COMPOSE2023PROJECT_VIDEOCHANNEL_H
+#define COMPOSE2023PROJECT_VIDEOCHANNEL_H
 
 
 #include "BaseChannel.h"
@@ -48,4 +48,4 @@ private:
 };
 
 
-#endif //PLAYER_VIDEOCHANNEL_H
+#endif //COMPOSE2023PROJECT_VIDEOCHANNEL_H

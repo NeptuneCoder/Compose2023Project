@@ -2,8 +2,8 @@
 // Created by yanghai on 2023/3/10.
 //
 
-#ifndef PLAYER_DNFFMPEG_H
-#define PLAYER_DNFFMPEG_H
+#ifndef COMPOSE2023PROJECT_DNFFMPEG_H
+#define COMPOSE2023PROJECT_DNFFMPEG_H
 
 #include "JavaCallHelper.h"
 #include "AudioChannel.h"
@@ -42,4 +42,4 @@ public:
 };
 
 
-#endif //PLAYER_DNFFMPEG_H
+#endif //COMPOSE2023PROJECT_DNFFMPEG_H

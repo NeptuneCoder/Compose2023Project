@@ -2,8 +2,8 @@
 // Created by yanghai on 2023/3/10.
 //
 
-#ifndef PLAYER_BASECHANNEL_H
-#define PLAYER_BASECHANNEL_H
+#ifndef COMPOSE2023PROJECT_BASECHANNEL_H
+#define COMPOSE2023PROJECT_BASECHANNEL_H
 
 
 #include "SafeQueue.h"
@@ -73,4 +73,4 @@ public:
     double clock;
 };
 
-#endif //PLAYER_BASECHANNEL_H
+#endif //COMPOSE2023PROJECT_BASECHANNEL_H
