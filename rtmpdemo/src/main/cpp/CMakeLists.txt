@@ -22,7 +22,7 @@ find_library( # Sets the name of the path variable.
         # you want CMake to locate.
         log)
 
-target_link_libraries(native-lib ${log-lib} rtmp z x264
+target_link_libraries(native-lib ${log-lib} rtmp z x264 faac
         log
         #Android NDK 提供的进行音频播放工具
         )

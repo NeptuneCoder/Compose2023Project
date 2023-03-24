@@ -199,11 +199,12 @@ void DNFFmpeg::_start() {
                 && videoChannel->packets.empty() && videoChannel->frames.empty()) {
                 break;
             }
+            BaseChannel::releaseAvPacket(&packet);
             //为什么这里要让它继续循环 而不是sleep
             //如果是做直播 ，可以sleep
             //如果要支持点播(播放本地文件） seek 后退
         } else {
-            //
+            BaseChannel::releaseAvPacket(&packet);
             break;
         }
     }

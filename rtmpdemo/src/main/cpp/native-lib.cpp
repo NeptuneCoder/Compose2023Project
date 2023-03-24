@@ -7,19 +7,29 @@
 #include "SafeQueue.h"
 #include "macro.h"
 #include "VideoChannel.h"
+#include "AudioChannel.h"
 
 SafeQueue<RTMPPacket *> packets;
 VideoChannel *videoChannel = 0;
+AudioChannel *audioChannel = 0;
 int isStart = 0;
 pthread_t pid;
 int readyPushing = 0;
 uint32_t start_time = 0;
 
+
 void releaseRTMPPacket(RTMPPacket **packet) {
     DELETE(packet);
 }
 
-void callback(RTMPPacket *packet) {
+void videoCallback(RTMPPacket *packet) {
+    if (packet) {
+        packet->m_nTimeStamp = RTMP_GetTime() - start_time;
+        packets.push(packet);
+    }
+}
+
+void audioCallback(RTMPPacket *packet) {
     if (packet) {
         packet->m_nTimeStamp = RTMP_GetTime() - start_time;
         packets.push(packet);
@@ -33,9 +43,14 @@ Java_com_example_rtmpdemo_LivePusher_native_1init(JNIEnv *env, jobject thiz) {
     //进行初始化的操作；准备一个video编码工具类进行编码
     videoChannel = new VideoChannel;
     //初始化编码器
-    videoChannel->setRTMPPacketCallback(callback);
+    videoChannel->setRTMPPacketCallback(videoCallback);
+
     //准备一个队列，打包好的数据统一放入队列中；在线程中发送到服务器
     packets.setReleaseCallback(releaseRTMPPacket);
+
+    audioChannel = new AudioChannel;
+    audioChannel->setRTMPPacketCallback(audioCallback);
+
 }
 
 
@@ -78,6 +93,8 @@ void *start(void *args) {
         start_time = RTMP_GetTime();
         readyPushing = 1;
         packets.setWork(1);
+
+        audioCallback(audioChannel->getAudioTag());
         RTMPPacket *packet;
         while (isStart) {
             packets.pop(packet);
@@ -139,6 +156,7 @@ Java_com_example_rtmpdemo_LivePusher_native_1pushVideo(JNIEnv *env, jobject thiz
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_rtmpdemo_LivePusher_native_1stop(JNIEnv *env, jobject thiz) {
+    packets.setWork(0);
     packets.clear();
     DELETE(videoChannel);
     pthread_join(pid, 0);
@@ -148,5 +166,40 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_rtmpdemo_LivePusher_native_1release(JNIEnv *env, jobject thiz) {
     // TODO: implement native_release()
+    DELETE(videoChannel);
+    DELETE(audioChannel);
+
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_rtmpdemo_LivePusher_native_1setAudioEncInfo(JNIEnv *env, jobject thiz,
+                                                             jint sample_rate_in_hz,
+                                                             jint channel_config) {
+    if (audioChannel) {
+        audioChannel->setVideoEncInfo(sample_rate_in_hz, channel_config);
+    }
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_rtmpdemo_LivePusher_getInputSamples(JNIEnv *env, jobject thiz) {
+    if (audioChannel) {
+        return audioChannel->getInputSamples();
+    }
+    return -1;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_rtmpdemo_LivePusher_native_1pushAudio(JNIEnv *env, jobject thiz,
+                                                       jbyteArray buffer) {
+    if (!audioChannel || !readyPushing) {
+        return;
+    }
+    jbyte *data = env->GetByteArrayElements(buffer, 0);
+
+
+    LOGE("data === %d\n", data[0]);
+    audioChannel->encodeData(data);
+    env->ReleaseByteArrayElements(buffer, data, 0);
 
 }

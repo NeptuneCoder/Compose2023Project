@@ -6,6 +6,8 @@ import android.view.SurfaceHolder;
 import com.example.rtmpdemo.channel.AudioChannel;
 import com.example.rtmpdemo.channel.VideoChannel;
 
+import org.jetbrains.annotations.NotNull;
+
 
 public class LivePusher {
 
@@ -29,7 +31,7 @@ public class LivePusher {
                       int fps, int cameraId) {
         native_init();
         videoChannel = new VideoChannel(this, activity, width, height, bitrate, fps, cameraId);
-        audioChannel = new AudioChannel();
+        audioChannel = new AudioChannel(activity.getApplicationContext(), this);
     }
 
     public void setPreviewDisplay(SurfaceHolder surfaceHolder) {
@@ -59,9 +61,15 @@ public class LivePusher {
 
     public native void native_setVideoEncInfo(int width, int height, int fps, int bitrate);
 
+    public native void native_setAudioEncInfo(int sampleRateInHz, int channelConfig);
+
     public native void native_pushVideo(byte[] data);
 
     public native void native_stop();
 
     public native void native_release();
+
+    public native int getInputSamples();
+
+    public native void native_pushAudio(@NotNull byte[] buffer);
 }
