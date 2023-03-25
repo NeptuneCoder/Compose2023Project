@@ -1,12 +1,11 @@
 package com.example.livedata
 
-import android.text.TextUtils
-import android.util.Log
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 
-class GameViewModel : ViewModel() {
+class GameViewModel(private val application: Application) : AndroidViewModel(application) {
     //实现了单向数据源
     private val _currentScrambledWord = MutableLiveData<String>("test")
     val currentScrambledWord: LiveData<String>
@@ -14,11 +13,43 @@ class GameViewModel : ViewModel() {
 
     var inputContent = MutableLiveData<String>("")
 
+
+    private var score = 0
+    private var currentWordCount = 0
+    private val _worldCount = MutableLiveData<String>(
+        application.getString(R.string.word_count, 0, MAX_NO_OF_WORDS)
+    )
+    val worldCount: LiveData<String>
+        get() = _worldCount
+
+    private val _score = MutableLiveData<String>(
+        application.getString(R.string.score, 0)
+    )
+    val scoreRef: LiveData<String>
+        get() = _score
+
+
     fun onSkipWord() {
-        Log.i("tag", "onSkipWord")
+        _currentScrambledWord.value = getNextScrambledWord()
+        currentWordCount++
+        _worldCount.value =
+            application.getString(R.string.word_count, currentWordCount, MAX_NO_OF_WORDS)
     }
 
     fun onSubmitWord() {
-        Log.i("tag", "onSubmitWord")
+        _currentScrambledWord.value = getNextScrambledWord()
+        currentWordCount++
+
+        _worldCount.value =
+            application.getString(R.string.word_count, currentWordCount, MAX_NO_OF_WORDS)
+        score += SCORE_INCREASE
+        _score.value = application.getString(R.string.score, score)
+    }
+
+
+    private fun getNextScrambledWord(): String {
+        val tempWord = allWordsList.random().toCharArray()
+        tempWord.shuffle()
+        return String(tempWord)
     }
 }

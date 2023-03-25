@@ -8,7 +8,15 @@ import androidx.databinding.DataBindingUtil
 import com.example.livedata.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
-    val gameViewModel by viewModels<GameViewModel>()
+
+    val gameViewModel by viewModels<GameViewModel> {
+        GameViewModelProvider(application)
+    }
+
+    //        ViewModelProvider(
+//            viewModelStore,
+//            CustomAndroidViewModelFactory(application, GameViewModel::application)
+//        ).get(GameViewModel::class.java)
     lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
