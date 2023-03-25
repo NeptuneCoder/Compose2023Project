@@ -10,7 +10,6 @@ class GameViewModel(private val application: Application) : AndroidViewModel(app
     private val _currentScrambledWord = MutableLiveData<String>("test")
     val currentScrambledWord: LiveData<String>
         get() = _currentScrambledWord
-
     var inputContent = MutableLiveData<String>("")
 
 

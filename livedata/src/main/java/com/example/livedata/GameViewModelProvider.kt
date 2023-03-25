@@ -10,6 +10,7 @@ class GameViewModelProvider(val application: Application) : ViewModelProvider.Fa
             return GameViewModel(application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
+
         return super.create(modelClass)
     }
 }
