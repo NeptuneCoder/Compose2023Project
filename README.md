@@ -1,3 +1,4 @@
+[TOC]
 ### 概述
 该项目是根据图书《Jetpack Compose 从入门到实战》的练习代码以及使用Compose开发的天气app:"小新天气"；
 后期可能会增加其他使用Compose开发的项目。
@@ -12,6 +13,15 @@
 项目地址:https://github.com/HaiYangCode/svg2png
 
 ###### [小新天气apk下载](https://raw.githubusercontent.com/HaiYangCode/Compose2023Project/main/SNWeather/release/SNWeather-release.apk)
+
+
+
+#### 其他工程实例
+1. databinding
+2. viewBinding
+3. mvvm
+4. mvi
+
 
 
 
