@@ -5,23 +5,22 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 
 class DNPlayer : SurfaceHolder.Callback {
-    external fun stringFromJNI(): String
-    external fun newFun(array: IntArray, strs: Array<String>)
+
     private lateinit var errorListener: OnErrorListener
-    private lateinit var onPrepaseListner: OnPreparsListener
+    private lateinit var onPrepaseListner: OnPrepaseLiestener
 
     lateinit var holder: SurfaceHolder
     private lateinit var surfaceView: SurfaceView
 
-    private lateinit var dataSource: String
+    private lateinit var url: String
 
     init {
         System.loadLibrary("nativeLib")
     }
 
 
-    fun setDataSource(dataSource: String) {
-        this.dataSource = dataSource
+    fun setUrl(url: String) {
+        this.url = url
     }
 
     fun setSurfaceView(surfaceView: SurfaceView) {
@@ -33,18 +32,18 @@ class DNPlayer : SurfaceHolder.Callback {
     }
 
     fun prepare() {
-        native_prepare(dataSource)
+        native_prepare(url)
     }
 
     fun onPrepase() {
         onPrepaseListner.onPrepase()
     }
 
-    fun setOnPrepaseListener(onPrepaseListner: OnPreparsListener) {
+    fun setOnPrepaseListener(onPrepaseListner: OnPrepaseLiestener) {
         this.onPrepaseListner = onPrepaseListner
     }
 
-    interface OnPreparsListener {
+    interface OnPrepaseLiestener {
         fun onPrepase()
     }
 
@@ -57,13 +56,12 @@ class DNPlayer : SurfaceHolder.Callback {
     }
 
 
-
     fun release() {
 
     }
 
     fun onError(code: Int) {
-        errorListener?.onError(code)
+        errorListener.onError(code)
     }
 
     fun setOnErrorListener(errorListener: OnErrorListener) {

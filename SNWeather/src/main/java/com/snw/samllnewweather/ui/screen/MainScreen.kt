@@ -79,11 +79,9 @@ fun MainScreen(viewModel: MainViewModel, chooseLocationClick: (Int) -> Unit = {}
     val weatherInfo by viewModel.weatherData.collectAsState()
     val showPlaceholder by viewModel.showPlaceholder.collectAsState()
 
-
     val pullRefreshState = rememberPullRefreshState(refreshing, {/*TODO 刷新*/
         viewModel.refresh()
     })
-
 
     Box(
         Modifier

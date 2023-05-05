@@ -5,6 +5,7 @@ project("Compose2023Project")
 #link_directories("/usr/local/Cellar/ffmpeg/5.1.2_5/lib")
 
 include_directories("${CMAKE_SOURCE_DIR}/include/")
+
 #设置连接动态库的路径
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}")
 set(CMAKE_SHARED_LINKER_FLAGS "-fPIC -Wl,--exclude-libs,libgcc.a -Wl,--exclude-libs,libatomic.a -static-libstdc++ -Wl,--build-id  -Wall -v -Wl,--no-warn-shared-textrel -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments -Wl,-z,noexecstack -fPIE")

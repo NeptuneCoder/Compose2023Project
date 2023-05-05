@@ -11,6 +11,7 @@ class MainViewModel : ViewModel() {
     var adapter: RvAdapter
     val data = mutableListOf<User>()
 
+
     init {
         data.add(User("zhagnsan", 23))
         data.add(User("lisi", 22))

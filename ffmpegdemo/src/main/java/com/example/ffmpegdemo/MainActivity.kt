@@ -5,19 +5,6 @@ import android.view.SurfaceView
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.ffmpegdemo.ui.theme.Compose2023ProjectTheme
 
 class MainActivity : ComponentActivity() {
     val dnPlayer by lazy { DNPlayer() }
@@ -27,9 +14,10 @@ class MainActivity : ComponentActivity() {
         val surfaceView = findViewById<SurfaceView>(R.id.surface_view)
         val onStartBtn = findViewById<Button>(R.id.on_start)
         val onStopBtn = findViewById<Button>(R.id.on_stop)
-        dnPlayer.setDataSource("http://39.134.65.162/PLTV/88888888/224/3221225611/index.m3u8") //rtmp://live.hkstv.hk.lxdns.com/live/hks")
+
+        dnPlayer.setUrl("http://39.134.65.162/PLTV/88888888/224/3221225611/index.m3u8") //rtmp://live.hkstv.hk.lxdns.com/live/hks")
         dnPlayer.setSurfaceView(surfaceView)
-        dnPlayer.setOnPrepaseListener(object : DNPlayer.OnPreparsListener {
+        dnPlayer.setOnPrepaseListener(object : DNPlayer.OnPrepaseLiestener {
             override fun onPrepase() {
                 runOnUiThread {
                     Toast.makeText(this@MainActivity, "准备妥当：", Toast.LENGTH_LONG)

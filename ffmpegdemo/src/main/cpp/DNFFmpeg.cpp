@@ -19,17 +19,17 @@ void *task_prepare(void *args) {
     return 0;
 }
 
-DNFFmpeg::DNFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
+DNFFmpeg::DNFFmpeg(JavaCallHelper *callHelper, const char *url) {
     this->callHelper = callHelper;
     //防止 dataSource参数 指向的内存被释放
     //strlen 获得字符串的长度 不包括\0
-    this->dataSource = new char[strlen(dataSource) + 1];
-    strcpy(this->dataSource, dataSource);
+    this->url = new char[strlen(url) + 1];
+    strcpy(this->url, url);
 }
 
 DNFFmpeg::~DNFFmpeg() {
     //释放
-    DELETE(dataSource);
+    DELETE(url);
 }
 
 
@@ -38,6 +38,11 @@ void DNFFmpeg::prepare() {
     pthread_create(&pid, 0, task_prepare, this);
 }
 
+/**
+ * 1. 通过给到的地址读取音视频流信息；
+ * 2. 查找有几个音视频流信息，然后根据流身上带的参数；通过参数中的id找到解码器；根据解码器找到流的context。
+ * 3. 从流上得到的参数也可以知道流的类型
+ */
 void DNFFmpeg::_prepare() {
     // 初始化网络 让ffmpeg能够使用网络
     avformat_network_init();
@@ -48,7 +53,7 @@ void DNFFmpeg::_prepare() {
     AVDictionary *options = 0;
     //设置超时时间 微妙 超时时间5秒
     av_dict_set(&options, "timeout", "5000000", 0);
-    int ret = avformat_open_input(&formatContext, dataSource, 0, &options);
+    int ret = avformat_open_input(&formatContext, url, 0, &options);
     av_dict_free(&options);
     //ret不为0表示 打开媒体失败
     if (ret != 0) {
@@ -238,7 +243,7 @@ void *aync_stop(void *args) {
 
 void DNFFmpeg::stop() {
     isPlaying = 0;
-    callHelper = 0;
+    DELETE(callHelper);
     // formatContext
     pthread_create(&pid_stop, 0, aync_stop, this);
 };

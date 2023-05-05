@@ -68,20 +68,22 @@ class MainViewModel @Inject constructor(
             val locationInfo = dao.getLocationInfo()
 
             if (locationInfo == null) {
-                //TODO 第一次加载数据
+
                 initLoadData(location)
             } else {
+                //TODO 这里需要判断当前定位的地址和本地存储的地址是否为同一个地址
+
                 val weatherInfoList = dao.getBaseInfo(locationInfo.id, locationInfo.name)
                 if (locationInfo.lessThan20Min()) {
                     //直接使用查询到的地址
                     //否则查询新地址
                     val weatherInfo = weatherInfoList.findLastNewInfo()
                     if (weatherInfo.lessThan5Min()) {
-                        //TODO 直接查询当前天气
+                        //直接查询当前天气
                         loadHourDataByLocal(weatherInfo)
                         //
                     } else {
-                        //TODO 立刻查询天气
+                        //立刻查询天气
                         loadCurrentDataUseLocalAddressInfo(weatherInfo, loc)
                     }
                 } else {
@@ -89,11 +91,10 @@ class MainViewModel @Inject constructor(
                     dao.deleteLocationInfo(locationInfo)
                     val weatherInfo = weatherInfoList.findLastNewInfo()
                     if (System.currentTimeMillis() - weatherInfo.timestamp < 5 * 1000 * 60) {
-                        //TODO 直接查询当前天气
+                        //直接查询当前天气
                         loadHourDataByLocal(weatherInfo)
-                        //
                     } else {
-                        //TODO 立刻查询天气
+                        //立刻查询天气
                         loadCurrentDataByNet(weatherInfo, loc)
                     }
                 }
@@ -277,7 +278,6 @@ class MainViewModel @Inject constructor(
             //请求网络加载数据
             addressApi.getAddressInfo(location)
                 .zip(weatherApi.getRealTimeInfo(location)) { source0, source1 ->
-
                     val result = WeatherInfo()
                     result.locationGps = location
                     val location = source0.location.get(0)

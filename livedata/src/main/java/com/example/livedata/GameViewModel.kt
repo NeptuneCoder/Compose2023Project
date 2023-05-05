@@ -1,6 +1,7 @@
 package com.example.livedata
 
 import android.app.Application
+import androidx.databinding.ObservableField
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,6 +12,7 @@ class GameViewModel(private val application: Application) : AndroidViewModel(app
     val currentScrambledWord: LiveData<String>
         get() = _currentScrambledWord
     var inputContent = MutableLiveData<String>("")
+    val test = ObservableField<String>()
 
 
     private var score = 0

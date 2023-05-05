@@ -24,7 +24,7 @@ public:
     VideoChannel(int id, AVCodecContext *avCodecContext, AVRational time_base, int fps);
 
     ~VideoChannel();
-
+    //为了通过audioChannel 得到当前播放时间
     void setAudioChannel(AudioChannel *audioChannel);
 
     //解码+播放

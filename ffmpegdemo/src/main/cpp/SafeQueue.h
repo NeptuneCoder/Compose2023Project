@@ -13,7 +13,7 @@ using namespace std;
 
 template<typename T>
 class SafeQueue {
-    typedef void (*ReleaseCallback)(T *);
+    typedef void (* ReleaseCallback)(T *);
 
     typedef void (*SyncHandle)(queue<T> &);
 
